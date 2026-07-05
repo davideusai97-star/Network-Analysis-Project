@@ -1,6 +1,12 @@
 import argparse
 import csv
 
+'''
+Selects some columns from csv file and create some new csv with only selected ones.
+Columns are called by name, not their position, so the former csv needs a header
+Works with:
+python module_select_col_csv.py .\input.csv .\output.csv name_col1 name_col2 ... name_colN
+'''
 
 def copy_selected_columns(input_csv, output_csv, columns):
     with open(input_csv, "r", newline="", encoding="utf-8") as infile, open(
