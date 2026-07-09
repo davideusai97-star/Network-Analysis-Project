@@ -37,6 +37,16 @@ def count_same_author(ds, max_len, max_chunk, row, counter):            #recursi
 
     return counter+1
 
+'''
+dataset di prova:
+['./prova_dataset/prova.csv', './prova_dataset/prova4.csv']         './prova_dataset/prova_active_agents.csv'
+
+dataset veri:
+['sort_comments_col0134.csv', 'sort_posts_col028.csv']          'sort_active_agents_col01.csv'
+
+'''
+
+
 #INIZIALIZZAZIONE VARIABILI
 datasets_filename= ['sort_comments_col0134.csv', 'sort_posts_col028.csv']
 agent_list_filename='sort_active_agents_col01.csv'
@@ -53,16 +63,18 @@ for datasets in datasets_filename:
         len_dataset = sum(1 for _ in f) -1              #remove header from the count
 
     row_counter=0
-    max_chunk=100                   #insert limit to the recursion in the stack memory (max counter for 1 function call)
+    max_recursion=50                   #insert limit to the recursion in the stack memory (max counter for 1 function call)
     control_counter=0
+
+    progressing_control=1
 
     ds=pd.read_csv(datasets)
 
-    while (row_counter<len_dataset) and (control_counter<max_chunk):
+    while (row_counter<len_dataset) and (control_counter<max_recursion):
         control_counter += 1
         tmp_author_name=ds.at[row_counter, 'agent_name']            # memorize author
         if tmp_author_name in agent_list['name'].values:            # if is an agent, proceed to count their posts/comments
-            nr_posts = count_same_author(ds, len_dataset, max_chunk, row_counter, 0)
+            nr_posts = count_same_author(ds, len_dataset, max_recursion, row_counter, 0)
 
             author_line=np.where(agent_list['name'] == tmp_author_name)[0]       # extract author line in agent_list
             #with open(datasets, 'w', encoding='utf-8') as f:
@@ -72,9 +84,11 @@ for datasets in datasets_filename:
             total_matches = total_matches + nr_posts
 
         else:
-            print(f'match not found for {row_counter}')
             row_counter += 1                  #cif author is not in agents, checks next line for existing authors
-
+        
+        if (row_counter-progressing_control*100000 <0) :    #print flag each 100k lines checked
+            print(f'row {progressing_control*100}k reached')
+            progressing_control += 1
 
 
     print(total_matches)
