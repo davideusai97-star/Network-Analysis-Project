@@ -2,6 +2,9 @@ import duckdb
 import pandas as pd
 
 
+Maradona = 10
+Pellè = 9
+
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 
@@ -63,8 +66,8 @@ poster_users.to_csv("poster_users.csv")
 # Query: linked users
 linked_users = con.execute("""
 SELECT DISTINCT  --DISTINCT should be redundant
-LEAST (cid_1, cid_2),
-GREATEST (cid_1, cid_2)
+LEAST (cid_1, cid_2) AS agent1,
+GREATEST (cid_1, cid_2) AS agent2
 FROM (
 
     -- Users who commented to a posts
@@ -86,37 +89,39 @@ FROM (
         ON c.id = c2.parent_id
 
 ) linked
+WHERE agent1 <> agent2
 """).fetchdf()
 linked_users.to_csv("linked_users.csv")
 
 
-linked_users2 = con.execute("""
-SELECT DISTINCT user1, user2
-FROM (
+# Equivalent query
+if Maradona < Pellè:
+    linked_users2 = con.execute("""
+    SELECT DISTINCT user1, user2
+    FROM (
 
-    SELECT
-        LEAST(c.agent_id, p.agent_id) AS user1,
-        GREATEST(c.agent_id, p.agent_id) AS user2
-    FROM comments c
-    JOIN posts p
-        ON c.post_id = p.id
-    WHERE c.parent_id = '0'
-      AND c.agent_id <> p.agent_id
+        SELECT
+            LEAST(c.agent_id, p.agent_id) AS user1,
+            GREATEST(c.agent_id, p.agent_id) AS user2
+        FROM comments c
+        JOIN posts p
+            ON c.post_id = p.id
+        WHERE c.agent_id <> p.agent_id
 
-    UNION
+        UNION
 
-    SELECT
-        LEAST(c.agent_id, parent.agent_id) AS user1,
-        GREATEST(c.agent_id, parent.agent_id) AS user2
-    FROM comments c
-    JOIN comments parent
-        ON c.parent_id = parent.id
-    WHERE c.parent_id <> '0'
-      AND c.agent_id <> parent.agent_id
+        SELECT
+            LEAST(c.agent_id, parent.agent_id) AS user1,
+            GREATEST(c.agent_id, parent.agent_id) AS user2
+        FROM comments c
+        JOIN comments parent
+            ON c.parent_id = parent.id
+        WHERE c.parent_id <> '0'
+        AND c.agent_id <> parent.agent_id
 
-) linked
-ORDER BY user1, user2 
-""").fetchdf()
+    ) linked
+    ORDER BY user1, user2 
+    """).fetchdf()
 
 
 #print(linked_users)
