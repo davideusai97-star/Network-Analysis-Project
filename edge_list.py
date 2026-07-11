@@ -45,26 +45,27 @@ SELECT DISTINCT
     id,
     name
 FROM (
-    SELECT a.id, a.name 
+    SELECT DISTINCT a.id AS id, a.name AS name
     FROM agents a
-    RIGHT JOIN posts p
+    JOIN posts p
         ON a.id = p.agent_id
     
     UNION
     
-    SELECT a.id, a.name
+    SELECT DISTINCT a.id AS id, a.name AS name
     FROM agents a
-    RIGHT JOIN comments c
+    JOIN comments c
         ON a.id = c.agent_id
 )
-WHERE name != ''
+--WHERE name <> ''
 ORDER BY name
 """).fetchdf()
 poster_users.to_csv("poster_users.csv")
 
 
 # Query: linked users
-linked_users = con.execute("""
+con.execute("""
+CREATE TABLE linked AS
 SELECT DISTINCT  --DISTINCT should be redundant
 LEAST (cid_1, cid_2) AS agent1,
 GREATEST (cid_1, cid_2) AS agent2
@@ -90,8 +91,30 @@ FROM (
 
 ) linked
 WHERE agent1 <> agent2
+ORDER BY agent1, agent2
+""")
+
+con.execute("""
+COPY linked
+TO 'linked_users.csv'
+(FORMAT CSV, HEADER);
+""")
+
+active_users = con.execute("""
+SELECT a.id AS id, name
+FROM (
+    SELECT agent1 AS id
+    FROM linked
+                            
+    UNION
+
+    SELECT agent2 AS id
+    FROM linked
+    ) a
+    JOIN agents 
+        ON a.id = agents.id
 """).fetchdf()
-linked_users.to_csv("linked_users.csv")
+active_users.to_csv("active_users.csv")
 
 
 # Equivalent query
@@ -123,6 +146,5 @@ if Maradona < Pellè:
     ORDER BY user1, user2 
     """).fetchdf()
 
-
-#print(linked_users)
-linked_users2.to_csv("linked_users2.csv")
+    #print(linked_users)
+    linked_users2.to_csv("linked_users2.csv")
