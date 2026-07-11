@@ -2,3 +2,4 @@ pandas
 matplotlib
 datasets
 duckdb
+graph_tool
