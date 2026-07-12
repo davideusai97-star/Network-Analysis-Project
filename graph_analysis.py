@@ -83,14 +83,13 @@ for _, row in links.iterrows():
 
     e = g.add_edge(source_node, target_node)
 
-
     #e_weight[e] = float(row["weight"])
+
 end = time()
 print(f"Elapsed time for edges allocation: {end-start:.5f}")
 
-print(missing_entries, len(missing_entries))
+#print(missing_entries, len(missing_entries))
 
-exit()
 #g.edge_properties["weight"] = e_weight
 
 # Fast implementation of the degree
@@ -98,21 +97,37 @@ exit()
 v_tot_degree = g.degree_property_map("total")
 g.vertex_properties["tot_degree"] = v_tot_degree
 
+# ===============================================
+# ================= ANALYSIS ====================
+
+u = gt.extract_largest_component(g, directed=False, prune=True)
+
 # Useful question: how do we list the nodes/edges/neighbours?
 # Answer: via a method. gt is very method-centric
 
 # Accessing and sorting example
-rows = []
-for v in g.vertices():
-    degree = v.in_degree() # degree
-    rows.append((degree, v))
+access = False
+if access:
+    rows = []
+    for v in u.vertices():
+        degree = v.in_degree() + v.out_degree() # degree
+        rows.append((degree, v))
 
-rows.sort(key= lambda x: x[0])
+    rows.sort(key= lambda x: x[0])
 
-for deg, v in rows:
-    print(f"{deg}, {g.vertex_properties["node_label"][v]}")
-    print(v.in_degree(), v.out_degree())
+    for deg, v in rows:
+        print(f"{deg}, {u.vertex_properties["node_label"][v]}")
+        print(v.in_degree(), v.out_degree())
 
+n_vertex = len(u.get_vertices())
+n_edges = len(u.get_edges())
+
+print(f"N° of vercies in g.c.c.: {n_vertex}; N° of edges : {n_edges}")
+
+density = n_edges*2/(n_vertex*(n_vertex - 1))
+global_cluster, global_cluster_std = gt.global_clustering(u)
+
+u.list_properties()
 
 # ===============================================
 
@@ -145,23 +160,28 @@ if DIFFUSION:
 # Visualization
 
 # List all properties on the graph (VERY useful)
-g.list_properties()
 
-out_name = "moltbook_base"
+out_name = "moltbook_base_conn_comp"
 # Best: open in Gephi
 # Every ranking on Gephi-lite online can be obtained through a property map
-g.save(out_name + ".graphml")
+u.save(out_name + ".graphml")
+
+# Calculate layout
+pos = gt.sfdp_layout(
+    u,
+
+)
+
+"""    C=3.0,
+    p=2.0,
+    theta=0.6,
+    r=0.5"""
 
 # Draw to SVG
 gt.graph_draw(
-    g,
-    vertex_text=v_node_label,
-    vertex_fill_color="lightsteelblue",
-    vertex_size=2,
-    #edge_pen_width=gt.prop_to_size(e_weight, 0.5, 4.0),
-    edge_end_marker="arrow",
-    edge_color="red",
-    output=out_name,
+    u,
+    pos=pos,
+    output=out_name + ".pdf",
 )
 
-display(SVG(out_name))
+#display(SVG(out_name+ ".pdf"))

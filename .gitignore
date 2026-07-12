@@ -3,3 +3,5 @@
 *.json
 tmp
 **/.vscode/
+*.graphml
+*.pdf
