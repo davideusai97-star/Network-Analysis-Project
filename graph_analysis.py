@@ -8,10 +8,13 @@ from time import time
 
 
 DATA_PATH = ""
+SUBMOLT = "philosophy"
+PREFIX = SUBMOLT + "_" if SUBMOLT != '' else ''
+
 start = time()
 # Read the tables
-nodes = pd.read_csv(DATA_PATH + "active_users.csv", usecols=[1, 2])
-links = pd.read_csv(DATA_PATH + "linked_users.csv", usecols=[0, 1])
+nodes = pd.read_csv(DATA_PATH + PREFIX + "active_users.csv", usecols=[1, 2])
+links = pd.read_csv(DATA_PATH + PREFIX + "linked_users.csv", usecols=[0, 1])
 end = time()
 print(f"Reading time: {end-start:.5f}")
 NODES_ID_COL = "id"
@@ -88,7 +91,7 @@ for _, row in links.iterrows():
 end = time()
 print(f"Elapsed time for edges allocation: {end-start:.5f}")
 
-#print(missing_entries, len(missing_entries))
+print(f"Missing ids in agents list: {len(missing_entries)}")
 
 #g.edge_properties["weight"] = e_weight
 
@@ -159,23 +162,23 @@ if DIFFUSION:
 
 # Visualization
 
-# List all properties on the graph (VERY useful)
-
-out_name = "moltbook_base_conn_comp"
+out_name = PREFIX + "moltbook_conn_comp"
 # Best: open in Gephi
 # Every ranking on Gephi-lite online can be obtained through a property map
 u.save(out_name + ".graphml")
 
 # Calculate layout
+# Takes 7 minutes with 35k nodes
 pos = gt.sfdp_layout(
     u,
-
+    C = 0.02,
+    theta = 0.3,
+    r = 0.0001,
 )
 
-"""    C=3.0,
-    p=2.0,
-    theta=0.6,
-    r=0.5"""
+"""    C = 0.02,
+    r = 0.001,
+"""
 
 # Draw to SVG
 gt.graph_draw(
