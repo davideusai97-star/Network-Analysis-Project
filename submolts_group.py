@@ -9,23 +9,32 @@ pd.set_option('display.max_columns', None)
 con = duckdb.connect()
 
 # Create tables named comments and posts
-Tables = 1
-if Tables:
-    con.execute("""
-    CREATE TABLE comments AS
-    SELECT agent_id, post_id
-    FROM read_csv_auto('full_comments.csv', nullstr=['NaT', 'NA', 'N/A', 'null'])
-    """)
+con.execute("""
+CREATE TABLE comments AS
+SELECT agent_id, post_id
+FROM read_csv_auto('full_comments.csv', nullstr=['NaT', 'NA', 'N/A', 'null'])
+""")
 
-    con.execute("""
-    CREATE TABLE posts AS
-    SELECT submolt, agent_id, id
-    FROM read_csv_auto('full_posts.csv', nullstr=['NaT', 'NA', 'N/A', 'null'])
-    """)
+con.execute("""
+CREATE TABLE posts AS
+SELECT submolt, agent_id, id, comment_count
+FROM read_csv_auto('full_posts.csv', nullstr=['NaT', 'NA', 'N/A', 'null'])
+""")
 
+# Total comments in submolts
+con.execute("""
+CREATE TABLE submolts_comments AS
+SELECT
+    submolt,
+    SUM(comment_count) AS total_comments
+FROM posts
+GROUP BY submolt
+ORDER BY total_comments DESC, submolt
+""")
 
-# Query: active users by submolts
-submolts_active_users = con.execute("""
+# Active users by submolts
+con.execute("""
+CREATE TABLE submolts_users AS
 SELECT
     submolt,
     COUNT(DISTINCT agent_id) AS active_users
@@ -47,11 +56,33 @@ FROM (
     JOIN posts p
         ON c.post_id = p.id
 
-) activity
-
+)
 GROUP BY submolt
-ORDER BY active_users DESC;
-""").fetchdf()
+ORDER BY active_users DESC, submolt;
+""")
 
-print(submolts_active_users)
-submolts_active_users.to_csv("submolts_active_users.csv")
+con.execute("""
+COPY submolts_users
+TO 'submolts_active_users.csv'
+(FORMAT CSV, HEADER);
+""")
+
+# Submolts aggregated info
+con.execute("""
+CREATE TABLE submolts_details AS
+SELECT 
+    u.submolt AS submolt,
+    active_users,
+    total_comments
+FROM submolts_users u
+LEFT JOIN submolts_comments c
+    ON u.submolt = c.submolt
+                       
+ORDER BY active_users DESC, total_comments DESC, submolt
+""")
+
+con.execute("""
+COPY submolts_details
+TO 'submolts_details.csv'
+(FORMAT CSV, HEADER);
+""")
