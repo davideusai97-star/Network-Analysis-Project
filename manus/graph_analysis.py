@@ -51,9 +51,9 @@ end = time()
 print(f"Elapsed time for vertex allocation: {end-start:.5f}")
 
 # IMPORTANT: this assignation step is crucial to make the properties part of the graph
-g.vertex_properties["node_label"] = v_node_label
+g.vertex_properties[NODES_LABEL_COL] = v_node_label
 #g.vertex_properties["leaning"] = v_leaning
-g.vertex_properties["node_label"][g.vertex(len(nodes) - 1)]
+g.vertex_properties[NODES_LABEL_COL][g.vertex(len(nodes) - 1)]
 
 # Edge property
 # As above, they are given through edge property maps

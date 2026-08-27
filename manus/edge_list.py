@@ -1,6 +1,9 @@
 import duckdb
 import pandas as pd
 
+import os
+cwd = os.getcwd()
+print(cwd)
 
 Maradona = 10
 Pellè = 9
@@ -8,13 +11,15 @@ Pellè = 9
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 
+OUT_DIR = cwd + "/out/"
+
 # Connect database, now every result (intermediate) will be stored in memory for the time of the computation
 con = duckdb.connect()
 
 # Create tables named comments and posts
 con.execute("""
 CREATE TABLE comments AS
-SELECT id, agent_id, post_id, parent_id
+SELECT id, agent_id, post_id, parent_id, created_at
 FROM read_csv_auto('full_comments.csv', nullstr=['NaT', 'NA', 'N/A', 'null'])
 """)
 
@@ -52,7 +57,7 @@ FROM (
 --WHERE name <> ''
 ORDER BY name
 """).fetchdf()
-poster_users.to_csv("poster_users.csv")
+poster_users.to_csv(OUT_DIR + "poster_users.csv")
 
 
 # ========================================================
@@ -63,6 +68,7 @@ PREFIX = SUBMOLT + "_" if SUBMOLT != '' else ''
 
 SUBMOLT_COMMENTS = PREFIX + "comments"
 LINKED_TABLE = PREFIX + "linked"
+TIMESTAMPS_TABLE = PREFIX + "timestamped"
 
 if SUBMOLT != '':
     # Table for filtered comments by submolt
@@ -73,6 +79,7 @@ if SUBMOLT != '':
         c.agent_id AS agent_id,
         c.post_id AS post_id,
         c.parent_id AS parent_id,
+        c.created_at AS created_at,
         submolt
     FROM comments c
     JOIN (SELECT * FROM posts WHERE submolt = '{SUBMOLT}') p
@@ -112,7 +119,7 @@ ORDER BY agent1, agent2
 
 con.execute(f"""
 COPY '{LINKED_TABLE}'
-TO '{LINKED_TABLE}_users.csv'
+TO '{OUT_DIR + LINKED_TABLE}_users.csv'
 (FORMAT CSV, HEADER);
 """)
 
@@ -132,10 +139,54 @@ FROM (
         ON a.id = agents.id
 ORDER BY name
 """).fetchdf()
-active_users.to_csv(f"{PREFIX}active_users.csv")
+active_users.to_csv(OUT_DIR + f"{PREFIX}active_users.csv")
 
 
-# Equivalent query
+# Table of comments with timestamp
+con.execute(f"""
+CREATE TABLE '{TIMESTAMPS_TABLE}' AS
+SELECT DISTINCT  --DISTINCT should be redundant
+LEAST (cid_1, cid_2) AS agent1,
+GREATEST (cid_1, cid_2) AS agent2,
+timestamp
+FROM (
+
+    -- Users who commented to a post in SUBMOLT
+    SELECT
+        c.agent_id AS cid_1,
+        p.agent_id AS cid_2,
+        c.created_at AS timestamp
+    FROM '{SUBMOLT_COMMENTS}' c
+    JOIN posts p
+        ON c.post_id = p.id
+    WHERE parent_id = '' -- only comments to posts
+
+    UNION
+
+    -- Users who commented to a comment
+    SELECT
+        c.agent_id AS cid_1,
+        c2.agent_id AS cid_2,
+        c2.created_at AS timestamp -- because c2.parent_id is the father, so c2 is the child
+    FROM '{SUBMOLT_COMMENTS}' c
+    JOIN (SELECT * FROM '{SUBMOLT_COMMENTS}' WHERE parent_id <> '') c2
+        ON c.id = c2.parent_id
+
+)
+WHERE agent1 <> agent2
+ORDER BY timestamp
+""")
+
+con.execute(f"""
+COPY '{TIMESTAMPS_TABLE}'
+TO '{OUT_DIR + TIMESTAMPS_TABLE}_users.csv'
+(FORMAT CSV, HEADER);
+""")
+
+# Quick check for timestamp table
+
+
+# Equivalent query (global linked users)
 if Maradona < Pellè:
     linked_users2 = con.execute("""
     SELECT DISTINCT user1, user2
