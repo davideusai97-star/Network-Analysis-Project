@@ -3,8 +3,11 @@ import numpy as np
 
 '''
 We use a self merging algorithm to light out the 'commutative couples', e.g. link due to auth1 comment
-to auth2 post is the same as link due to auth2 comment to auth1 post.
-We merge the list of links to itself if former_auth in list1 is (??????)
+to auth2 post is the same as link due to auth2 comment to auth1 post
+We merge the list of links to itself as in edgelist, but we sort the two authors in each row alphabetically
+so that the link is always represented
+we then group by the two authors and count the number of occurrences, which gives us the 'molteplicity' (weight)
+of the link
 '''
 
 # 1. Load your dataset (assuming columns: 'former_auth', 'latter_auth')

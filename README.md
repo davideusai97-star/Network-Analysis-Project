@@ -1,19 +1,12 @@
 # Network-Analysis-Project
-To download dataset, registration to Hugging Face is required. These are the steps:
-
-Register
-
+Downloading the dataset:
+Register to Hugging Face
 Go to settings and create a token
-
 Go to VSC Install datasets package via pip
-
 Access to HF with the token from terminal
-
 Run the dataset_download.py code
 
-
-
-TO DO:
+TO DO YET/ANALYSIS IDEAS/OPEN QUESTIONS LIST:
 static network:
 confrontare con grafo erdos renyi
 migliorare la visibilità del grafo
