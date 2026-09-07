@@ -14,8 +14,11 @@ Run the dataset_download.py code
 
 
 TO DO:
-aggiungere le molteplicità alle interazioni nel grafo statico
+static network:
+confrontare con grafo erdos renyi
+migliorare la visibilità del grafo
 
-confrontare con barabasi albert e grafo erdos renyi
-
-dynamic network: guardando com varia il peso degli edges, possiamo chiederci se gli ageenti tendono ad inteeragire con nuovi post o con quelli - di tendenza-
+dynamic network:
+scegliere l'algoritmo più confacente ai nostri interessi per studio delle community dinamiche
+guardando com varia il peso degli edges, possiamo chiederci se gli ageenti tendono ad inteeragire con nuovi post o con quelli - di tendenza-, inferendo l'esistenza di un sistema di score dei post
+analisi delle community dei diversi submolt nel tempo
