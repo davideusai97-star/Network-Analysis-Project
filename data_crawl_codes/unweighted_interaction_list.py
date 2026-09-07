@@ -4,16 +4,15 @@ import numpy as np
 '''
 We use a self merging algorithm to light out the 'commutative couples', e.g. link due to auth1 comment
 to auth2 post is the same as link due to auth2 comment to auth1 post.
-We merge the list of links to itself if former_auth in list1 is 
-
+We merge the list of links to itself if former_auth in list1 is (??????)
 '''
 
 # 1. Load your dataset (assuming columns: 'former_auth', 'latter_auth')
-df = pd.read_csv('interaction_list - Copia.csv')
+df = pd.read_csv('./full_datasets/philosophy_timestamped_users - Copia.csv')
 
 # 2. Extract the two author columns into a numpy array for blistering fast sorting
 # This prevents Python loop overhead entirely
-authors_array = df[['former_author', 'comment_author']].to_numpy().astype(str)
+authors_array = df[['agent1', 'agent2']].to_numpy().astype(str)
 
 # 3. Sort each row horizontally (alphabetically)
 # If a row is ['Bob', 'Alice'], it instantly becomes ['Alice', 'Bob']
@@ -35,7 +34,7 @@ final_df = df.groupby(['person_A', 'person_B']).agg(
 final_df = final_df.rename(columns={'person_A': 'agent_A', 'person_B': 'agent_B'})
 
 # 7. Save the clean, filtered data
-final_df.to_csv('edge_list_collapsed.csv', index=False, encoding='utf-8')
+final_df.to_csv('philosophy_timestamped_users_weighted.csv', index=False, encoding='utf-8')
 
 print(f"Original rows: {len(df)}")
 print(f"Collapsed rows: {len(final_df)}")
