@@ -1,4 +1,7 @@
 *.csv
 *.png
+*.json
 tmp
-.vscode
+**/.vscode/
+*.graphml
+*.pdf
