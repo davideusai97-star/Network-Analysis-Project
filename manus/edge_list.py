@@ -11,7 +11,7 @@ Pellè = 9
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 
-OUT_DIR = cwd + "/out/"
+OUT_DIR = cwd + "/proc/"
 
 # Connect database, now every result (intermediate) will be stored in memory for the time of the computation
 con = duckdb.connect()
@@ -113,7 +113,7 @@ FROM (
         ON c.id = c2.parent_id
 
 )
-WHERE agent1 <> agent2
+-- WHERE agent1 <> agent2
 ORDER BY agent1, agent2
 """)
 

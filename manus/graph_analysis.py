@@ -5,9 +5,13 @@ from IPython.display import display, SVG
 import matplotlib.pyplot as plt
 
 from time import time
+import os
+
+cwd = os.getcwd()
 
 
-DATA_PATH = ""
+DATA_PATH = cwd + "/proc/"
+print(DATA_PATH)
 SUBMOLT = "philosophy"
 PREFIX = SUBMOLT + "_" if SUBMOLT != '' else ''
 
@@ -92,6 +96,7 @@ end = time()
 print(f"Elapsed time for edges allocation: {end-start:.5f}")
 
 print(f"Missing ids in agents list: {len(missing_entries)}")
+print(sorted(set(missing_entries.items()), key=lambda ent: ent[1], reverse=True))
 
 #g.edge_properties["weight"] = e_weight
 
