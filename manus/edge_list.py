@@ -63,11 +63,11 @@ poster_users.to_csv(OUT_DIR + "poster_users.csv")
 # ========================================================
 # Queries and tables for submolts filtered comments & users
 
-SUBMOLTS = ['philosophy', ]#'ai', 'consciousness', 'aithoughts', 'ponderings', 'offmychest']
+SUBMOLTS = ['philosophy', 'ai', 'consciousness', 'aithoughts', 'ponderings', 'offmychest']
 SUBMOLT = "_".join(sub for sub in SUBMOLTS)
 PREFIX = SUBMOLT + "_" if SUBMOLT != '' else ''
 QUERY = "'" + "', '".join(sub for sub in SUBMOLTS) + "'"
-print(QUERY)
+
 
 SUBMOLT_COMMENTS = PREFIX + "comments"
 LINKED_TABLE = PREFIX + "linked"
@@ -128,7 +128,7 @@ COPY '{LINKED_TABLE}'
 TO '{OUT_DIR + LINKED_TABLE}_users.csv'
 (FORMAT CSV, HEADER);
 """)
-exit()
+
 # Users list who commented or have been commented onto
 active_users = con.execute(f"""
 SELECT a.id AS id, name
