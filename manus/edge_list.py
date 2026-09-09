@@ -63,8 +63,11 @@ poster_users.to_csv(OUT_DIR + "poster_users.csv")
 # ========================================================
 # Queries and tables for submolts filtered comments & users
 
-SUBMOLT = 'philosophy'
+SUBMOLTS = ['philosophy', ]#'ai', 'consciousness', 'aithoughts', 'ponderings', 'offmychest']
+SUBMOLT = "_".join(sub for sub in SUBMOLTS)
 PREFIX = SUBMOLT + "_" if SUBMOLT != '' else ''
+QUERY = "'" + "', '".join(sub for sub in SUBMOLTS) + "'"
+print(QUERY)
 
 SUBMOLT_COMMENTS = PREFIX + "comments"
 LINKED_TABLE = PREFIX + "linked"
@@ -82,7 +85,7 @@ if SUBMOLT != '':
         c.created_at AS created_at,
         submolt
     FROM comments c
-    JOIN (SELECT * FROM posts WHERE submolt = '{SUBMOLT}') p
+    JOIN (SELECT * FROM posts WHERE submolt IN ({QUERY})) p
         ON c.post_id = p.id
     """)
 
@@ -91,13 +94,15 @@ con.execute(f"""
 CREATE TABLE '{LINKED_TABLE}' AS
 SELECT DISTINCT  --DISTINCT should be redundant
 LEAST (cid_1, cid_2) AS agent1,
-GREATEST (cid_1, cid_2) AS agent2
+GREATEST (cid_1, cid_2) AS agent2,
+submolt
 FROM (
 
     -- Users who commented to a post in SUBMOLT
     SELECT
         c.agent_id AS cid_1,
         p.agent_id AS cid_2,
+        p.submolt
     FROM '{SUBMOLT_COMMENTS}' c
     JOIN posts p
         ON c.post_id = p.id
@@ -107,7 +112,8 @@ FROM (
     -- Users who commented to a comment
     SELECT
         c.agent_id AS cid_1,
-        c2.agent_id AS cid_2
+        c2.agent_id AS cid_2,
+        c.submolt
     FROM '{SUBMOLT_COMMENTS}' c
     JOIN (SELECT * FROM '{SUBMOLT_COMMENTS}' WHERE parent_id <> '0') c2
         ON c.id = c2.parent_id
@@ -122,7 +128,7 @@ COPY '{LINKED_TABLE}'
 TO '{OUT_DIR + LINKED_TABLE}_users.csv'
 (FORMAT CSV, HEADER);
 """)
-
+exit()
 # Users list who commented or have been commented onto
 active_users = con.execute(f"""
 SELECT a.id AS id, name

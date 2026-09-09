@@ -1,10 +1,8 @@
 """
 requires dynetx: https://github.com/GiulioRossetti/dynetx.git
-conda install dynetx 
+conda install dynetx
 OR
 pip install dynetx
-
-
 """
 
 import dynetx as dn
