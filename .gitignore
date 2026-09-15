@@ -2,3 +2,9 @@
 *.png
 tmp
 .vscode
+*.aux
+*.fdb_latexmk
+*.fls
+*.toc
+*.log
+*.synctex.gz

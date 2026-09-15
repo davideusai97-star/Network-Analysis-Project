@@ -1,0 +1,110 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{amsmath,amssymb,amsfonts,amsthm,dsfont, braket}
+\usepackage{blindtext}
+\usepackage{multicol}
+\title{Moltbook Network Analysis}
+\author{Manuel Antonio Pianini, Davide Usai, Alice Vistalli}
+\date{\today}
+\begin{document}
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+\setcounter{page}{1}
+\begin{multicols}{2}
+   \section*{Scelta del dataset}
+   Il network oggetto del progetto è la rete di connessioni tra agenti AI del social Moltbook, di cui indaghiamo,
+   oltre all'analisi convenzionale delle proprietà del grafo statico (Chap.\ref{chap_analisi}) e dinamico (Chap. \ref{chap_analisi dinamic}),
+   l'organizzazione in community (Chap.\ref{chap_community detection}).
+   Ci interroghiamo anche su alcuni aspetti dell'evoluzione delle community, evidenziando le peculiarità della specifica rete.
+   I dati utilizzati sono pubblici ed accessibili da huggingface/SimulaMet/moltbook-observatory-archive (previa registrazione ad HuggingFace),
+   ma onerosi in memoria: selezioniamo solo alcuni dataset consultabili, riducendoci ad agenti, post e commenti, da cui estrarre il grafo utile lavorando con una mole
+   gestibile di dati.
+\end{multicols}
+
+\hrulefill
+
+\begin{multicols}{2}
+   \section{Data Collection}
+   I tre dataset scelti sono dizionari della forma
+   \begin{itemize}
+      \item agenti: 'id', 'name', 'description', 'karma', 'follower\_count', 'following\_count', 'is\_claimed',
+         'owner\_x\_handle', 'first\_seen\_at', 'last\_seen\_at', 'created\_at', 'avatar\_url', 'dump\_date'
+      \item post: 'id', 'agent\_id', 'agent\_name', 'submolt', 'title', 'content', 'url', 'score', 'comment\_count', 
+         'created\_at', 'fetched\_at', 'is\_pinned', 'dump\_date'
+      \item commenti: 'id', 'post\_id', 'agent\_id', 'agent\_name', 'parent\_id', 'content', 'score', 'created\_at',
+         'fetched\_at', 'dump\_date'
+   \end{itemize}
+   Nella nostra analisi, ci avvarremo principalmente degli ID di agenti, post e commenti, del nome degli agenti e dei timestamps.
+   La scelta di ignorare il resto sarà motivata nel proseguo dell'analisi.
+
+   \subsection{Coerenza e qualità di dati}
+   I dataset vengono aggiornati separatamente dal provider, pertanto non sono perfettamente coerenti: può
+   succedere ad esempio che un agente si disiscriva dal social, venendo depennato dal dataset \textit{agenti}
+   ma ciò non cancella i suoi eventuali tracce nei dataset \textit{post} e \textit{commenti}.
+   Questo porta alla comparsa alcuni \textit{edges fantasma} di difficile gestione.
+   
+   Al fine di creare un grafo consistente, definiamo come edge l'\textbf{interazione tra agenti}, ossia l'atto
+   di commentare un post o il commento di un altro agente o se stesso, mentre un nodo rappresenterà un
+   \textbf{agente} con un accezione ristretta: nel solo caso in cui questo abbia postato ed il suo post sia stato commentato.
+   Questa scelta induce alcune notevoli conseguenze:
+   \t ogni nodo ha almeno un edge, perciò compariranno i nodi singoli (disconnessi) solo se questi hanno
+   self-loops ( agenti che si sono commentati da soli);
+   \t possiamo ricavare la lista degli edges e dedurne quella dei nodi, unendo i dizionari con la funzione
+   \textit{merging} di pandas ed usando come dataset principale quello dei commenti, accoppiando gli ID degli agenti che hanno interagito;
+   \t questi edges sono per natura direzionati e pesati (nel caso di molteplici interazioni).
+   
+   \subsection{Direzione e peso degli edges}
+   Dopo esserci ristretti ai soli autori commentati, a questo punto, la lista degli edges è un insieme di
+   coppie di ID degli agenti, con un \textit{former author} ed un \textit{latter author}.
+   Questa ridefinizione è il modo più comodo per gestire il caso di un commento ai commenti: se ciò avviene in un caso, infatti potrebbe avvenire all'infinito.
+   Fatto ciò, il numero di coppie della lista è pari al numero dei commenti.
+   All'interno di una stessa coppia, ordiniamo alfanumericamente gli ID di \textit{authors}: in questo modo
+   \[ \textit{agente B}\rightarrow\textit{agente A} \Rightarrow \textit{agente A}\rightarrow\textit{agente B} \]
+   \[ \textit{agente A}\rightarrow\textit{agente B} \Rightarrow \textit{agente A}\rightarrow\textit{agente B} \]
+   il grafo perde direzionalità.
+   Riordinando poi l'intera lista possiamo contare (eventualmente segnando i pesi) gli edges effettivi e non direzionati, raggruppando le coppie identiche.
+\end{multicols}
+
+\hrulefill
+
+\section{Network Analysis}
+Il grafo costruito a questo punto viene analizzato con il pacchetto \textit{networkx} di Python.
+
+Il grafo Analysis of the graph data using NetworkX and Matplotlib. The code reads a CSV file containing graph data,
+constructs a graph from it, and visualizes the graph using a spring layout.
+
+\end{document}
+
+MAKE A WEIGHTED VERSION OF DATASET, UN-TIMESTAMPED. CHECK IF WEIGHTS SIGNIFICANTLY CHANGE THE RESULTS
+
+STATIC GRAPH ANALYSIS:
+Degree distribution, V
+avg degree (---> small world? scale free?),        
+Connected components analysis;                              
+Path analysis (avg path lenght, diameter, )
+Clustering Coefficient (global + local, avg),     V         ----> low clustering? ---> barabasi-albert Clust_BA = (ln N^2)/N = 0.0052 for N=3111
+Density analysis (sparse? dense? self-interactions?);       ---->unweighted density = 0.0024, weighted density = 0.0009??
+Centrality analysis (degree,
+    connectivity: katz?,
+    geometrical: closeness? farness? betweeness?)
+S-analysis with edge weight?
+
+CLUSTER 1: COMMUNITY DISCOVERY
+Assortativity (homophily, degree correlation)                   LOUVAIN ha senso qui?
+Bridges detection (GIRVAN-NEUMANN) and neighbourhood
+k-cliques?
+Label propagation?
+
+
+and many others ...
+Compare with random models ER and BA, and see how the properties differ.
+RANDOM MODEL: avg distance and degree in ER is it sparse?
+BARABASI: max degree of a hub is consistent with osservation?
+
+
+DYNAMIC ANALYSIS: is it present some sort of preferenctial attachment? or the new nodes and links are random?
+'''
