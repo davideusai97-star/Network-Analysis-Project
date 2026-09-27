@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
+\usepackage{subfigure}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 \usepackage{amsmath,amssymb,amsfonts,amsthm,dsfont, braket}
 \usepackage{blindtext}
@@ -29,6 +30,7 @@
 
 \begin{multicols}{2}
    \section{Data Collection}
+   \label{sec:data_collection}
    I tre dataset scelti sono dizionari della forma
    \begin{itemize}
       \item agenti: 'id', 'name', 'description', 'karma', 'follower\_count', 'following\_count', 'is\_claimed',
@@ -70,13 +72,58 @@
 \end{multicols}
 
 \hrulefill
+\begin{figure}[htb]
+   \includegraphics[width=0.9\textwidth]{../many_fig/many_plot.png}
+   \caption{WRONG IMAGe::: USA IMG CON ANCHe PARTe DISCONNeSSA::::: \\ Network degli agenti Moltbook, non direzionato e non pesato, costruito seguendo i passi di sez. \ref{sec:data_collection}.}
+   \label{fig:network}
+\end{figure}
 
-\section{Network Analysis}
-Il grafo costruito a questo punto viene analizzato con il pacchetto \textit{networkx} di Python.
 
-Il grafo Analysis of the graph data using NetworkX and Matplotlib. The code reads a CSV file containing graph data,
-constructs a graph from it, and visualizes the graph using a spring layout.
+\begin{multicols}{2}
+   \section{Network Analysis}
+   \label{chap_analisi}
+   Il grafo costruito a questo punto viene analizzato con il pacchetto \textit{networkx} di Python.
+   Consiste in un network con più componenti connesse, di cui una principale e numerose altre con pochissimi nodi.
 
+   \begin{center}
+      \begin{tabular}{|c|c|c|c|}
+         \hline
+         \multicolumn{4}{|c|}{Shape of the graph} \\
+         \hline
+         Nodes & Edges & Density & Max degree \\
+         9339 & 56674 & 0.00130 & 1931 \\
+         \hline
+         \multicolumn{2}{|c|}{Avg. degree} & \multicolumn{2}{|c|}{Avg. clustering coeff.} \\
+         \multicolumn{2}{|c|}{12.14} & \multicolumn{2}{|c|}{0.12941} \\
+         \hline
+      \end{tabular}
+      \label{tab:graph_shape}
+   \end{center}
+   Possiamo notare subito che il coefficiente di clustering medio è piuttosto alto, come ci si
+   aspetterebbe in un network reale.
+   Più interessanti sono però le distribuzioni sui nodi delle proprietà, che ci permettono di caratterizzare
+   il grafo.
+\end{multicols}
+
+   \begin{figure}[htb]
+      \centering
+      \subfigure(a){\includegraphics[width=0.45\textwidth]{../many_fig/deg_distr.png}}
+      \label{fig:deg_distr}
+      \subfigure(b){\includegraphics[width=0.45\textwidth]{../many_fig/rank_plot.png}}
+      \label{fig:rank_plot}
+      \subfigure(c){\includegraphics[width=0.45\textwidth]{../many_fig/between_distr.png}}
+      \label{fig:between_distr}
+      \subfigure(d){\includegraphics[width=0.45\textwidth]{../many_fig/clust_distr.png}}
+      \label{fig:clust_distr}
+      \caption{Rispettivamente per i nodi: (a) degree distribution; (b) rank plot; (c) betweeness centrality distribution; (d) clustering coefficient distribution}
+   \end{figure}
+\begin{multicols}{2}
+   I primi due plot (\ref{fig:deg_distr} e \ref{fig:rank_plot}) suggeriscono che esiste un sistema di poche hub,
+   che in questo caso rappresentano gli agenti più attivi o influenti; modellizzeremo quindi il network come
+   un modello di Barabasi-Albert con nodi ed edges di tabella \ref{tab:graph_shape}.
+
+
+\end{multicols}
 \end{document}
 
 MAKE A WEIGHTED VERSION OF DATASET, UN-TIMESTAMPED. CHECK IF WEIGHTS SIGNIFICANTLY CHANGE THE RESULTS
@@ -86,7 +133,7 @@ Degree distribution, V
 avg degree (---> small world? scale free?),        
 Connected components analysis;                              
 Path analysis (avg path lenght, diameter, )
-Clustering Coefficient (global + local, avg),     V         ----> low clustering? ---> barabasi-albert Clust_BA = (ln N^2)/N = 0.0052 for N=3111
+Clustering Coefficient (global + local, avg),     V         ----> low clustering? ---> barabasi-albert Clust_BA = (ln N^2)/N = 0.0052 for N=
 Density analysis (sparse? dense? self-interactions?);       ---->unweighted density = 0.0024, weighted density = 0.0009??
 Centrality analysis (degree,
     connectivity: katz?,
@@ -108,3 +155,16 @@ BARABASI: max degree of a hub is consistent with osservation?
 
 DYNAMIC ANALYSIS: is it present some sort of preferenctial attachment? or the new nodes and links are random?
 '''
+
+
+Nodes: 9339, Edges: 56674
+Max degree: 1931, avg degree: 12.14, density: 0.00130
+Mean clustering coefficient: 0.12941
+-> Analyzing path metrics on the Largest Connected Component (LCC)...
+-> LCC Size: 9267 nodes (99.2%)
+PATH ANALYSIS RESULTS
+Diameter (Max shortest path):       10
+Radius (Min eccentricity):          5
+Average Path Length:               3.4104
+Center Nodes (Eccentricity = 5):   ['d8f2050e-a890-41e2-a248-89ffbe7eeedb', 'e669bbca-fc06-4b69-aa61-a0f2e9b664c3']
+Peripheral Nodes (Eccentricity = 10): ['ae9945e1-51c8-47ff-b6ff-4c11080f8d0a', 'e956acbe-f18e-4293-a470-81c9632b432f', '1875d477-fa3a-4016-b24b-36c5f77b1875', '143f57ab-f973-47a4-b8d3-d2467102c6d2', '4b8fe302-9663-4fb8-a1af-8900462cd212']...

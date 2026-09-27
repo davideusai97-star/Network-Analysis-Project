@@ -43,10 +43,11 @@ DYNAMIC ANALYSIS: is it present some sort of preferenctial attachment? or the ne
 edge_list_collapsed
 philosophy_timestamped_users
 philosophy_timestamped_users_weighted
+many_timestamped_users
 '''
 
 data_folder='./full_datasets/'
-data=pd.read_csv(f'{data_folder}philosophy_timestamped_users.csv')  # Assuming you have a CSV file with graph data
+data=pd.read_csv(f'{data_folder}many_timestamped_users.csv')  # Assuming you have a CSV file with graph data
 
 col1=data.columns[0]
 col2=data.columns[1]
@@ -82,7 +83,7 @@ avg_clust_coeff = sum(clust_vals) / len(clust_vals) if clust_vals else 0
 # Print basic stats
 print(f"Nodes: {G.number_of_nodes()}, Edges: {G.number_of_edges()}")
 print(f"Max degree: {degree_sequence[0] if degree_sequence else 0}, avg degree: {avg_degree:.2f}, density: {density:.5f}")
-
+print(f"Mean clustering coefficient: {avg_clust_coeff:.5f}")
 #top_n = 10
 #top_central = sorted(betweenness_centrality.items(), key=lambda x: x[1], reverse=True)[:top_n]
 #print(f"Top {top_n} nodes by betweenness centrality: {top_central}")
@@ -159,6 +160,7 @@ print(f"Average Path Length:               {avg_path_length:.4f}")
 print(f"Center Nodes (Eccentricity = {radius}):   {center_nodes[:5]}{'...' if len(center_nodes) > 5 else ''}")
 print(f"Peripheral Nodes (Eccentricity = {diameter}): {periphery_nodes[:5]}{'...' if len(periphery_nodes) > 5 else ''}")
 
+
 '''
 # 3. Set up the canvas
 plt.figure(figsize=(10, 8))
@@ -186,8 +188,6 @@ plt.show()
 '''
 
 
-
-
 '''
 philosophy_timestamped_users_weighted.csv
 mean clustering coefficient: 0.11989993036014533, average clustering coefficient (NetworkX): 0.11989993036014544
@@ -195,6 +195,16 @@ Nodes: 3111, Edges: 11612
 Max degree: 574
 
 
+many_timestamped_users.csv
+Nodes: 9339, Edges: 56674
+Max degree: 1931, avg degree: 12.14, density: 0.00130
+-> Analyzing path metrics on the Largest Connected Component (LCC)...
+PATH ANALYSIS RESULTS
+Diameter (Max shortest path):       10
+Radius (Min eccentricity):          5
+Average Path Length:               3.4104
+Center Nodes (Eccentricity = 5):   ['d8f2050e-a890-41e2-a248-89ffbe7eeedb', 'e669bbca-fc06-4b69-aa61-a0f2e9b664c3']
+Peripheral Nodes (Eccentricity = 10): ['ae9945e1-51c8-47ff-b6ff-4c11080f8d0a', 'e956acbe-f18e-4293-a470-81c9632b432f', '1875d477-fa3a-4016-b24b-36c5f77b1875', '143f57ab-f973-47a4-b8d3-d2467102c6d2', '4b8fe302-9663-4fb8-a1af-8900462cd212']...
 
 
 '''
