@@ -18,8 +18,8 @@
 \begin{multicols}{2}
    \section*{Scelta del dataset}
    Il network oggetto del progetto è la rete di connessioni tra agenti AI del social Moltbook, di cui indaghiamo,
-   oltre all'analisi convenzionale delle proprietà del grafo statico (Chap.\ref{chap_analisi}) e dinamico (Chap. \ref{chap_analisi dinamic}),
-   l'organizzazione in community (Chap.\ref{chap_community detection}).
+   oltre all'analisi convenzionale delle proprietà del grafo statico (Cap.\ref{sec:graph_analysis}) e dinamico (Cap. \ref{sec:dynamic_analysis}),
+   l'organizzazione in community (Cap.\ref{sec:community_detection}).
    Ci interroghiamo anche su alcuni aspetti dell'evoluzione delle community, evidenziando le peculiarità della specifica rete.
    I dati utilizzati sono pubblici ed accessibili da huggingface/SimulaMet/moltbook-observatory-archive (previa registrazione ad HuggingFace),
    ma onerosi in memoria: selezioniamo solo alcuni dataset consultabili, riducendoci ad agenti, post e commenti, da cui estrarre il grafo utile lavorando con una mole
@@ -81,7 +81,7 @@
 
 \begin{multicols}{2}
    \section{Network Analysis}
-   \label{chap_analisi}
+   \label{sec:graph_analysis}
    Il grafo costruito a questo punto viene analizzato con il pacchetto \textit{networkx} di Python.
    Consiste in un network con più componenti connesse, di cui una principale e numerose altre con pochissimi nodi.
 
@@ -117,13 +117,35 @@
       \label{fig:clust_distr}
       \caption{Rispettivamente per i nodi: (a) degree distribution; (b) rank plot; (c) betweeness centrality distribution; (d) clustering coefficient distribution}
    \end{figure}
+
+\subsection{Modelli random equivalenti: Barabasi-Albert}
 \begin{multicols}{2}
    I primi due plot (\ref{fig:deg_distr} e \ref{fig:rank_plot}) suggeriscono che esiste un sistema di poche hub,
-   che in questo caso rappresentano gli agenti più attivi o influenti; modellizzeremo quindi il network come
+   che in questo caso rappresentano gli agenti più attivi o influenti; generiamo quindi un grafo random usando
    un modello di Barabasi-Albert con nodi ed edges di tabella \ref{tab:graph_shape}.
-
-
+   Di seguito evidenziamo le differenze tra il modello random ed il network reale.
 \end{multicols}
+
+\begin{figure}[htb]
+   \includegraphics[width=0.9\textwidth]{../BA_fig/BA_plot.png}
+   \caption{Random network degli agenti Moltbook con modello Barabasi-Albert, costruito dalla richiesta di nodi e edges equivalenti a Tab.\ref{tab:graph_shape}.}
+   \label{fig:BA_network}
+\end{figure}
+
+\begin{figure}[htb]
+   \centering
+   \subfigure(a){\includegraphics[width=0.45\textwidth]{../BA_fig/BA_deg_distr.png}}
+   \label{fig:ba_eg_distr}
+   \subfigure(b){\includegraphics[width=0.45\textwidth]{../BA_fig/BA_rank_plot.png}}
+   \label{fig:ba_rank_plot}
+   \subfigure(c){\includegraphics[width=0.45\textwidth]{../BA_fig/BA_betw_distr.png}}
+   \label{fig:ba_between_distr}
+   \subfigure(d){\includegraphics[width=0.45\textwidth]{../BA_fig/BA_clust_coeff.png}}
+   \label{fig:ba_clust_distr}
+   \caption{La stessa analisi di Cap.\ref{sec:graph_analysis}, condotta sul grafo BA equivalente: (a) degree distribution; (b) rank plot; (c) betweeness centrality distribution; (d) clustering coefficient distribution}
+\end{figure}
+   
+
 \end{document}
 
 MAKE A WEIGHTED VERSION OF DATASET, UN-TIMESTAMPED. CHECK IF WEIGHTS SIGNIFICANTLY CHANGE THE RESULTS
@@ -168,3 +190,18 @@ Radius (Min eccentricity):          5
 Average Path Length:               3.4104
 Center Nodes (Eccentricity = 5):   ['d8f2050e-a890-41e2-a248-89ffbe7eeedb', 'e669bbca-fc06-4b69-aa61-a0f2e9b664c3']
 Peripheral Nodes (Eccentricity = 10): ['ae9945e1-51c8-47ff-b6ff-4c11080f8d0a', 'e956acbe-f18e-4293-a470-81c9632b432f', '1875d477-fa3a-4016-b24b-36c5f77b1875', '143f57ab-f973-47a4-b8d3-d2467102c6d2', '4b8fe302-9663-4fb8-a1af-8900462cd212']...
+
+
+------------------------------------------------------------
+TARGET PROPERTIES: N=9339, E=56674, C_target=0.12941
+------------------------------------------------------------
+Calculated BA parameter 'm' (edges added per step): 6
+Reasoning: E(56674) / N(9339) ≈ 6.07 -> rounded to 6
+
+Generating standard Barabási-Albert graph...
+Graph generation complete.
+
+ACTUAL PROPERTIES OF RESULTING BA GRAPH:
+  - Nodes (N): 9339 (Match: YES)
+  - Edges (E): 55998 (Requested: 56674, Discrepancy: -676 (1.19%)
+  - Avg. Clustering (C): 0.00807
