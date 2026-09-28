@@ -1,8 +1,9 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
-def create_and_draw_equivalent_ba(target_N, target_E, target_clustering=None, seed=42):
+def create_and_draw_equivalent_ba(target_N, target_E, target_clustering=None, seed=random.seed()):
     """
     Generates and visualizes a Barabási-Albert graph that aims to be equivalent
     to a given graph based on Nodes (N), Edges (E).
@@ -111,7 +112,6 @@ def create_and_draw_equivalent_ba(target_N, target_E, target_clustering=None, se
 
     plt.show()
 
-    ''' 
     #PLOT THE GRAPH
     plt.figure(figsize=(10, 8))
     
@@ -156,14 +156,13 @@ def create_and_draw_equivalent_ba(target_N, target_E, target_clustering=None, se
     print("\nVisualization complete. Close the plot window to finish.")
     plt.show()
 
-    '''
 
 #INITIAL SETTINGS (TO MATCH THE ACTUAL GRAPH)
 # Define properties of a 'real' graph you want to mimic
 # Real graphs often have much higher clustering than standard BA
-given_N = 3111
-given_E = 11612  # We want a mean degree around 2*E/N = 6, so m≈3
-given_C = 0.11989993036014533  # High clustering - a 'small world' property
+given_N = 9339
+given_E = 56674  # We want a mean degree around 2*E/N = 6, so m≈3
+given_C = 0.12941  # High clustering - a 'small world' property
 
 create_and_draw_equivalent_ba(given_N, given_E, given_C)
 
