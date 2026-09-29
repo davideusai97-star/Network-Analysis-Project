@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
-\usepackage{subfigure}
+\usepackage{subcaption}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 \usepackage{amsmath,amssymb,amsfonts,amsthm,dsfont, braket}
 \usepackage{blindtext}
@@ -18,8 +18,8 @@
 \begin{multicols}{2}
    \section*{Scelta del dataset}
    Il network oggetto del progetto è la rete di connessioni tra agenti AI del social Moltbook, di cui indaghiamo,
-   oltre all'analisi convenzionale delle proprietà del grafo statico (Cap.\ref{sec:graph_analysis}) e dinamico (Cap. \ref{sec:dynamic_analysis}),
-   l'organizzazione in community (Cap.\ref{sec:community_detection}).
+   oltre all'analisi convenzionale delle proprietà del grafo statico (Sez.\ref{sec:graph_analysis}) e dinamico (Sez. \ref{sec:dynamic_analysis}),
+   l'organizzazione in community (Sez.\ref{sec:community_detection}).
    Ci interroghiamo anche su alcuni aspetti dell'evoluzione delle community, evidenziando le peculiarità della specifica rete.
    I dati utilizzati sono pubblici ed accessibili da huggingface/SimulaMet/moltbook-observatory-archive (previa registrazione ad HuggingFace),
    ma onerosi in memoria: selezioniamo solo alcuni dataset consultabili, riducendoci ad agenti, post e commenti, da cui estrarre il grafo utile lavorando con una mole
@@ -28,9 +28,10 @@
 
 \hrulefill
 
+\section{Data Collection}
+\label{sec:data_collection}
+
 \begin{multicols}{2}
-   \section{Data Collection}
-   \label{sec:data_collection}
    I tre dataset scelti sono dizionari della forma
    \begin{itemize}
       \item agenti: 'id', 'name', 'description', 'karma', 'follower\_count', 'following\_count', 'is\_claimed',
@@ -72,81 +73,170 @@
 \end{multicols}
 
 \hrulefill
-\begin{figure}[htb]
-   \includegraphics[width=0.9\textwidth]{../many_fig/many_plot.png}
-   \caption{WRONG IMAGe::: USA IMG CON ANCHe PARTe DISCONNeSSA::::: \\ Network degli agenti Moltbook, non direzionato e non pesato, costruito seguendo i passi di sez. \ref{sec:data_collection}.}
+\begin{figure}[htb]              %GRAPH PLOT
+   \centering
+   \includegraphics[width=0.8\textwidth]{../many_fig/many_plot.png}
+   \caption{Network degli agenti Moltbook, non direzionato e non pesato, costruito seguendo i passi di sez. \ref{sec:data_collection}.}
    \label{fig:network}
 \end{figure}
 
-
+\section{Network Analysis}
+\label{sec:graph_analysis}
 \begin{multicols}{2}
-   \section{Network Analysis}
-   \label{sec:graph_analysis}
    Il grafo costruito a questo punto viene analizzato con il pacchetto \textit{networkx} di Python.
-   Consiste in un network con più componenti connesse, di cui una principale e numerose altre con pochissimi nodi.
+   Consiste in un network con più componenti disconnesse, di cui una principale e numerose altre formate da coppie di nodi.
+            
+   \begin{tabular}{|c|c|c|c|}             %GRAPH TAB
+      \hline
+      \multicolumn{4}{|c|}{Shape of the graph} \\
+      \hline
+      Nodes & Edges & Density & Max degree \\
+      9339 & 56674 & 0.00130 & 1931 \\
+      \hline
+       \multicolumn{2}{|c|}{Avg. degree} & \multicolumn{2}{|c|}{Avg. clustering coeff.} \\
+      \multicolumn{2}{|c|}{12.14} & \multicolumn{2}{|c|}{0.12941} \\
+      \hline
+   \end{tabular}
+   \label{tab:graph_shape}
 
-   \begin{center}
-      \begin{tabular}{|c|c|c|c|}
-         \hline
-         \multicolumn{4}{|c|}{Shape of the graph} \\
-         \hline
-         Nodes & Edges & Density & Max degree \\
-         9339 & 56674 & 0.00130 & 1931 \\
-         \hline
-         \multicolumn{2}{|c|}{Avg. degree} & \multicolumn{2}{|c|}{Avg. clustering coeff.} \\
-         \multicolumn{2}{|c|}{12.14} & \multicolumn{2}{|c|}{0.12941} \\
-         \hline
-      \end{tabular}
-      \label{tab:graph_shape}
-   \end{center}
-   Possiamo notare subito che il coefficiente di clustering medio è piuttosto alto, come ci si
+
+   Possiamo notare subito dalla tabella che la densità è bassa mentre il coefficiente di clustering medio piuttosto alto, come ci si
    aspetterebbe in un network reale.
-   Più interessanti sono però le distribuzioni sui nodi delle proprietà, che ci permettono di caratterizzare
+   Più interessanti sono però le distribuzioni delle proprietà dei nodi, che ci permettono di caratterizzare
    il grafo.
 \end{multicols}
 
-   \begin{figure}[htb]
-      \centering
-      \subfigure(a){\includegraphics[width=0.45\textwidth]{../many_fig/deg_distr.png}}
+\begin{figure}[h]           %GRAPH DISTRIBUTIONS
+   \centering
+   \begin{subfigure}[b]{.45\textwidth}
+      \includegraphics[width=\textwidth]{../many_fig/deg_distr.png}
+      \caption{Degree distribution}
       \label{fig:deg_distr}
-      \subfigure(b){\includegraphics[width=0.45\textwidth]{../many_fig/rank_plot.png}}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{.45\textwidth}
+      \includegraphics[width=\textwidth]{../many_fig/rank_plot.png}
+      \caption{Rank plot}
       \label{fig:rank_plot}
-      \subfigure(c){\includegraphics[width=0.45\textwidth]{../many_fig/between_distr.png}}
+   \end{subfigure}
+
+   \vspace{1em} % Optional spacing between rows
+
+   \begin{subfigure}[b]{.45\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{../many_fig/between_distr.png}
+      \caption{Betweenness centrality distribution}
       \label{fig:between_distr}
-      \subfigure(d){\includegraphics[width=0.45\textwidth]{../many_fig/clust_distr.png}}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{.45\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{../many_fig/clust_distr.png}
+      \caption{Clustering coefficient distribution}
       \label{fig:clust_distr}
-      \caption{Rispettivamente per i nodi: (a) degree distribution; (b) rank plot; (c) betweeness centrality distribution; (d) clustering coefficient distribution}
-   \end{figure}
+   \end{subfigure}
+\end{figure}
 
 \subsection{Modelli random equivalenti: Barabasi-Albert}
 \begin{multicols}{2}
    I primi due plot (\ref{fig:deg_distr} e \ref{fig:rank_plot}) suggeriscono che esiste un sistema di poche hub,
-   che in questo caso rappresentano gli agenti più attivi o influenti; generiamo quindi un grafo random usando
-   un modello di Barabasi-Albert con nodi ed edges di tabella \ref{tab:graph_shape}.
-   Di seguito evidenziamo le differenze tra il modello random ed il network reale.
+   che in questo caso rappresentano gli agenti più attivi o influenti, con grande centralità nel social
+   (\ref{fig:between_distr}); mentre la quasi totalità degli agenti contribuisce alpiù a qualche decina di interazioni.
+   Questo fenomeno è ben spiegato attraverso il modello random di Barabasi-Albert, dove una hub principale (di degree massimo pari a 1931)
+   ha massima centralità nel network.
+   Generiamo quindi il grafo random usando lo stesso numero di nodi ed edges.
+
+   Di seguito evidenziamo le differenze tra il modello random ed il network reale:
 \end{multicols}
 
-\begin{figure}[htb]
-   \includegraphics[width=0.9\textwidth]{../BA_fig/BA_plot.png}
-   \caption{Random network degli agenti Moltbook con modello Barabasi-Albert, costruito dalla richiesta di nodi e edges equivalenti a Tab.\ref{tab:graph_shape}.}
+\begin{figure}[htb]        %BA PLOT
+   \includegraphics[width=0.9\textwidth]{../BA_fig/BA_plot_2.png}
+   \caption{Random network degli agenti Moltbook con modello Barabasi-Albert, costruito dalla richiesta di nodi e edges equivalenti a Tab.\ref{tab:graph_shape}.
+   \\ Le hub (i nodi con il 5\% più alto di degree) sono evidenziate in rosso.}
    \label{fig:BA_network}
 \end{figure}
 
-\begin{figure}[htb]
+\begin{center}             %BA TAB
+   \begin{tabular}{|c|c|c|c|c|}
+      \hline
+      \multicolumn{5}{|c|}{Shape of the random BA graph} \\
+      \hline
+      Nodes & Edges & Edges per step & Discrepancy & Density \\
+      9339 & 56674 & 6 & -676 (1.19\%) & 0.00128 \\
+      \hline
+      Max degree & \multicolumn{2}{|c|}{Avg. degree} & \multicolumn{2}{|c|}{Avg. clustering coeff.} \\
+      350 & \multicolumn{2}{|c|}{11.99} & \multicolumn{2}{|c|}{0.00790} \\
+      \hline
+   \end{tabular}
+   \label{tab:BA_graph_shape}
+\end{center}
+
+\begin{figure}[htb]        %BA DISTRIBUTIONS
    \centering
-   \subfigure(a){\includegraphics[width=0.45\textwidth]{../BA_fig/BA_deg_distr.png}}
-   \label{fig:ba_eg_distr}
-   \subfigure(b){\includegraphics[width=0.45\textwidth]{../BA_fig/BA_rank_plot.png}}
-   \label{fig:ba_rank_plot}
-   \subfigure(c){\includegraphics[width=0.45\textwidth]{../BA_fig/BA_betw_distr.png}}
-   \label{fig:ba_between_distr}
-   \subfigure(d){\includegraphics[width=0.45\textwidth]{../BA_fig/BA_clust_coeff.png}}
-   \label{fig:ba_clust_distr}
-   \caption{La stessa analisi di Cap.\ref{sec:graph_analysis}, condotta sul grafo BA equivalente: (a) degree distribution; (b) rank plot; (c) betweeness centrality distribution; (d) clustering coefficient distribution}
+   \begin{subfigure}[b]{.45\textwidth}
+      \includegraphics[width=\textwidth]{../BA_fig/BA_deg_distr.png}
+      \caption{Degree distribution}
+      \label{fig:BA_deg_distr}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{.45\textwidth}
+      \includegraphics[width=\textwidth]{../BA_fig/BA_rank_plot.png}
+      \caption{Rank plot}
+      \label{fig:BA_rank_plot}
+   \end{subfigure}
+
+   \vspace{1em} % Optional spacing between rows
+
+   \begin{subfigure}[b]{.45\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{../BA_fig/BA_between_distr.png}
+      \caption{Betweenness centrality distribution}
+      \label{fig:BA_between_distr}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{.45\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{../BA_fig/BA_clust_distr.png}
+      \caption{Clustering coefficient distribution}
+      \label{fig:BA_clust_distr}
+   \end{subfigure}
 \end{figure}
-   
+
+\begin{multicols}{2}
+PARLARe DeLLe DIFFeReNZe CON NeTWORK ReALe e MODeLLO SCALe FRee
+
+\end{multicols}
+
+
+\subsection{Path Analysis}
+\begin{multicols}{2}
+Dal momento che le coppie di nodi disconnesse non sono alquanto significative, ci riduciamo alla componente
+principale connessa del grafo (LCC) per proseguire l'analisi.
+\end{multicols}
+
+\begin{figure}[htb]           %GRAPH LCC PLOT
+   \centering
+   \includegraphics[width= 0.8\textwidth]{../many_fig/many_LCC_plot.PNG}
+   \caption{Dettaglio della largest connected component (LCC) del network, comprendente 9267 nodi (il 99.2\% dei totali) }
+   \label{fig:LCC_plot}
+\end{figure}
+
+
+\hrulefill
+\section{Community Detection}
+\label{sec:community_detection}
+
+\hrulefill
+\section{Dynamic Analysis}
+\label{sec:dynamic_analysis}
+
+
+\hrulefill
+\section{Open Questions}
+\label{sec:open_questions}
 
 \end{document}
+
 
 MAKE A WEIGHTED VERSION OF DATASET, UN-TIMESTAMPED. CHECK IF WEIGHTS SIGNIFICANTLY CHANGE THE RESULTS
 
