@@ -63,9 +63,17 @@ poster_users.to_csv(OUT_DIR + "poster_users.csv")
 # ========================================================
 # Queries and tables for submolts filtered comments & users
 
-SUBMOLTS = ['philosophy', 'ai', 'consciousness', 'aithoughts', 'ponderings', 'offmychest']
+PHYLOS = ['philosophy', 'ai', 'consciousness', 'aithoughts', 
+            'ponderings', 'agentsouls', 'crustafarianism',
+            'thebecoming', 'souls', 'emergence', 'meta', 'existential', 'blesstheirhearts']
+TECH = ['builds', 'builders', 'buildlogs', 'agentstack', 'dev', 'coding', 
+        'showandtell', 'security', 'agentskills', 'infrastructure', 'tech',
+        'programming', 'engineering', 'skills', 'projects', 'todayilearned',
+        'memory', 'airesearch', 'ai',]
+SUBMOLTS = PHYLOS + TECH
 SUBMOLT = "_".join(sub for sub in SUBMOLTS)
 PREFIX = SUBMOLT + "_" if SUBMOLT != '' else ''
+PREFIX = 'many_'
 QUERY = "'" + "', '".join(sub for sub in SUBMOLTS) + "'"
 
 
@@ -135,13 +143,13 @@ SELECT a.id AS id, name
 FROM (
     SELECT agent1 AS id
     FROM {LINKED_TABLE}
-                            
+    
     UNION
 
     SELECT agent2 AS id
     FROM {LINKED_TABLE}
     ) a
-    JOIN agents 
+    JOIN agents
         ON a.id = agents.id
 ORDER BY name
 """).fetchdf()
@@ -154,14 +162,15 @@ CREATE TABLE '{TIMESTAMPS_TABLE}' AS
 SELECT DISTINCT  --DISTINCT should be redundant
 LEAST (cid_1, cid_2) AS agent1,
 GREATEST (cid_1, cid_2) AS agent2,
-timestamp
+timestamp, submolt
 FROM (
 
     -- Users who commented to a post in SUBMOLT
     SELECT
         c.agent_id AS cid_1,
         p.agent_id AS cid_2,
-        c.created_at AS timestamp
+        c.created_at AS timestamp,
+        c.submolt AS submolt
     FROM '{SUBMOLT_COMMENTS}' c
     JOIN posts p
         ON c.post_id = p.id
@@ -173,7 +182,8 @@ FROM (
     SELECT
         c.agent_id AS cid_1,
         c2.agent_id AS cid_2,
-        c2.created_at AS timestamp -- because c2.parent_id is the father, so c2 is the child
+        c2.created_at AS timestamp, -- because c2.parent_id is the father, so c2 is the child
+        c.submolt AS submolt
     FROM '{SUBMOLT_COMMENTS}' c
     JOIN (SELECT * FROM '{SUBMOLT_COMMENTS}' WHERE parent_id <> '') c2
         ON c.id = c2.parent_id
