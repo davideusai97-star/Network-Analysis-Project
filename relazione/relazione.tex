@@ -52,16 +52,16 @@
    
    Al fine di creare un grafo consistente, definiamo come edge l'\textbf{interazione tra agenti}, ossia l'atto
    di commentare un post o il commento di un altro agente o se stesso, mentre un nodo rappresenterà un
-   \textbf{agente} con un accezione ristretta: nel solo caso in cui questo abbia postato ed il suo post sia stato commentato.
+   \textbf{agente} con un'accezione ristretta: comparirà infatti nel solo caso in cui questi abbia postato ed il suo post sia stato commentato, oppure abbia commentato il post di altri.
    Questa scelta induce alcune notevoli conseguenze:
    \t ogni nodo ha almeno un edge, perciò compariranno i nodi singoli (disconnessi) solo se questi hanno
    self-loops ( agenti che si sono commentati da soli);
-   \t possiamo ricavare la lista degli edges e dedurne quella dei nodi, unendo i dizionari con la funzione
+   \t possiamo ricavare la lista degli edges e dedurne quella dei nodi, unendo i dizionari di post e commenti con la funzione
    \textit{merging} di pandas ed usando come dataset principale quello dei commenti, accoppiando gli ID degli agenti che hanno interagito;
    \t questi edges sono per natura direzionati e pesati (nel caso di molteplici interazioni).
    
    \subsection{Direzione e peso degli edges}
-   Dopo esserci ristretti ai soli autori commentati, a questo punto, la lista degli edges è un insieme di
+   Dopo esserci ristretti ai soli autori commentati e autori di commenti, a questo punto, la lista degli edges è un insieme di
    coppie di ID degli agenti, con un \textit{former author} ed un \textit{latter author}.
    Questa ridefinizione è il modo più comodo per gestire il caso di un commento ai commenti: se ciò avviene in un caso, infatti potrebbe avvenire all'infinito.
    Fatto ciò, il numero di coppie della lista è pari al numero dei commenti.
@@ -69,10 +69,12 @@
    \[ \textit{agente B}\rightarrow\textit{agente A} \Rightarrow \textit{agente A}\rightarrow\textit{agente B} \]
    \[ \textit{agente A}\rightarrow\textit{agente B} \Rightarrow \textit{agente A}\rightarrow\textit{agente B} \]
    il grafo perde direzionalità.
-   Riordinando poi l'intera lista possiamo contare (eventualmente segnando i pesi) gli edges effettivi e non direzionati, raggruppando le coppie identiche.
+   Contando la molteplicità delle coppie identiche, possiamo ottenere il peso degli edges.
+   Raggruppando le coppie in questo modo, perdiamo infomazione sulle interazioni temporali, ma siamo in grado di creare il network statico complessivo
+   con edges non pesati (ignorando semplicemente la molteplicità dei link) e non direzionati (Fig.\ref{fig:network}).
+   Le timestamps delle interazioni verranno reintrodotte per l'analisi di Sez.\ref{sec:dynamic_analysis}.
 \end{multicols}
 
-\hrulefill
 \begin{figure}[htb]              %GRAPH PLOT
    \centering
    \includegraphics[width=0.8\textwidth]{../many_fig/many_plot.png}
@@ -80,12 +82,14 @@
    \label{fig:network}
 \end{figure}
 
+\hrulefill
 \section{Network Analysis}
 \label{sec:graph_analysis}
 \begin{multicols}{2}
    Il grafo costruito a questo punto viene analizzato con il pacchetto \textit{networkx} di Python.
    Consiste in un network con più componenti disconnesse, di cui una principale e numerose altre formate da coppie di nodi.
-            
+
+   \vspace{5pt}            
    \begin{tabular}{|c|c|c|c|}             %GRAPH TAB
       \hline
       \multicolumn{4}{|c|}{Shape of the graph} \\
@@ -93,12 +97,11 @@
       Nodes & Edges & Density & Max degree \\
       9339 & 56674 & 0.00130 & 1931 \\
       \hline
-       \multicolumn{2}{|c|}{Avg. degree} & \multicolumn{2}{|c|}{Avg. clustering coeff.} \\
+      \multicolumn{2}{|c|}{Avg. degree} & \multicolumn{2}{|c|}{Avg. clustering coeff.} \\
       \multicolumn{2}{|c|}{12.14} & \multicolumn{2}{|c|}{0.12941} \\
       \hline
    \end{tabular}
    \label{tab:graph_shape}
-
 
    Possiamo notare subito dalla tabella che la densità è bassa mentre il coefficiente di clustering medio piuttosto alto, come ci si
    aspetterebbe in un network reale.
@@ -106,52 +109,95 @@
    il grafo.
 \end{multicols}
 
-\begin{figure}[h]           %GRAPH DISTRIBUTIONS
-   \centering
-   \begin{subfigure}[b]{.45\textwidth}
-      \includegraphics[width=\textwidth]{../many_fig/deg_distr.png}
-      \caption{Degree distribution}
-      \label{fig:deg_distr}
-   \end{subfigure}
-   \hfill
-   \begin{subfigure}[b]{.45\textwidth}
-      \includegraphics[width=\textwidth]{../many_fig/rank_plot.png}
-      \caption{Rank plot}
-      \label{fig:rank_plot}
-   \end{subfigure}
-
-   \vspace{1em} % Optional spacing between rows
-
-   \begin{subfigure}[b]{.45\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{../many_fig/between_distr.png}
-      \caption{Betweenness centrality distribution}
-      \label{fig:between_distr}
-   \end{subfigure}
-   \hfill
-   \begin{subfigure}[b]{.45\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{../many_fig/clust_distr.png}
-      \caption{Clustering coefficient distribution}
-      \label{fig:clust_distr}
-   \end{subfigure}
-\end{figure}
-
 \subsection{Modelli random equivalenti: Barabasi-Albert}
 \begin{multicols}{2}
-   I primi due plot (\ref{fig:deg_distr} e \ref{fig:rank_plot}) suggeriscono che esiste un sistema di poche hub,
+   I dai plot di sinistra di Fig.\ref{fig:network_differences} (specialmente \ref{fig:deg_distr} e \ref{fig:rank_plot}) suggeriscono che esiste un sistema di poche hub,
    che in questo caso rappresentano gli agenti più attivi o influenti, con grande centralità nel social
    (\ref{fig:between_distr}); mentre la quasi totalità degli agenti contribuisce alpiù a qualche decina di interazioni.
-   Questo fenomeno è ben spiegato attraverso il modello random di Barabasi-Albert, dove una hub principale (di degree massimo pari a 1931)
+   Questo fenomeno è ben spiegato attraverso il modello random di Barabasi-Albert, dove una hub principale (di degree pari a 1931 nel nostro caso) (Tab.\ref{tab:BA_graph_shape})
    ha massima centralità nel network.
    Generiamo quindi il grafo random usando lo stesso numero di nodi ed edges.
 
-   Di seguito evidenziamo le differenze tra il modello random ed il network reale:
+   Di seguito evidenziamo le differenze tra il modello random ed il network reale, rispettivamente a 
+   destra e sinistra in Fig.\ref{fig:network_differences}:
 \end{multicols}
 
+\begin{figure}[p]                %DISTRIBUZIONI DeL NeTOWRK ReALe e RANDOM eQUIVALeNTe
+   \centering
+   % Row 1
+   \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../many_fig/deg_distr.png}
+      \caption{Distribuzione dei degree del network}
+      \label{fig:deg_distr}
+   \end{subfigure}%
+   \hfill
+   \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../BA_fig/BA_deg_distr.png}
+      \caption{Distribuzione dei degree del grafo Barabasi-Albert}
+      \label{fig:BA_deg_distr}
+   \end{subfigure}
+
+   \vspace{0.8em} % Vertical spacing between rows
+
+   % Row 2
+   \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../many_fig/rank_plot.png}
+      \caption{Rank plot del network}
+      \label{fig:rank_plot}
+   \end{subfigure}%
+   \hfill
+   \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../BA_fig/BA_rank_plot.png}
+      \caption{Rank plot del grafo Barabasi-Albert}
+      \label{fig:BA_rank_plot}
+   \end{subfigure}
+
+   \vspace{0.8em}
+
+   % Row 3
+   \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../many_fig/between_distr.png}
+      \caption{Distribuzione della betweenness centrality dl grafo}
+      \label{fig:between_distr}
+   \end{subfigure}%
+   \hfill
+   \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../BA_fig/BA_between_distr.png}
+      \caption{Distribuzione della betweenness centrality del grafo di Barabasi-Albert}
+      \label{fig:BA_between_distr}
+   \end{subfigure}
+
+   \vspace{0.8em}
+
+   % Row 4
+   \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../many_fig/clust_distr.png}
+      \caption{Distribuzione del coefficiente di clustering locale del grafo}
+      \label{fig:clust_distr}
+   \end{subfigure}%
+   \hfill
+   \begin{subfigure}[b]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../BA_fig/BA_clust_distr.png}
+      \caption{Distribuzione del coefficiente di clustering locale del grafo Barabasi-Albert}
+      \label{fig:BA_clust_coeff}
+   \end{subfigure}
+
+   \caption{Differenze tra il network reale (sinistra) e il network generato dal modello random equivalente (Barabasi-Albert) (destra).}
+   \label{fig:network_differences}
+\end{figure}
+
 \begin{figure}[htb]        %BA PLOT
-   \includegraphics[width=0.9\textwidth]{../BA_fig/BA_plot_2.png}
-   \caption{Random network degli agenti Moltbook con modello Barabasi-Albert, costruito dalla richiesta di nodi e edges equivalenti a Tab.\ref{tab:graph_shape}.
+   \includegraphics[width=0.8\textwidth]{../BA_fig/BA_plot_2.png}
+   \caption{Random network degli agenti Moltbook con modello Barabasi-Albert, costruito richiedendo un numero di nodi ed edges
+   equivalenti a Tab.\ref{tab:graph_shape}.
    \\ Le hub (i nodi con il 5\% più alto di degree) sono evidenziate in rosso.}
    \label{fig:BA_network}
 \end{figure}
@@ -165,75 +211,83 @@
       9339 & 56674 & 6 & -676 (1.19\%) & 0.00128 \\
       \hline
       Max degree & \multicolumn{2}{|c|}{Avg. degree} & \multicolumn{2}{|c|}{Avg. clustering coeff.} \\
-      350 & \multicolumn{2}{|c|}{11.99} & \multicolumn{2}{|c|}{0.00790} \\
+      419 & \multicolumn{2}{|c|}{11.99} & \multicolumn{2}{|c|}{0.0084} \\
       \hline
    \end{tabular}
    \label{tab:BA_graph_shape}
 \end{center}
 
-\begin{figure}[htb]        %BA DISTRIBUTIONS
-   \centering
-   \begin{subfigure}[b]{.45\textwidth}
-      \includegraphics[width=\textwidth]{../BA_fig/BA_deg_distr.png}
-      \caption{Degree distribution}
-      \label{fig:BA_deg_distr}
-   \end{subfigure}
-   \hfill
-   \begin{subfigure}[b]{.45\textwidth}
-      \includegraphics[width=\textwidth]{../BA_fig/BA_rank_plot.png}
-      \caption{Rank plot}
-      \label{fig:BA_rank_plot}
-   \end{subfigure}
-
-   \vspace{1em} % Optional spacing between rows
-
-   \begin{subfigure}[b]{.45\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{../BA_fig/BA_between_distr.png}
-      \caption{Betweenness centrality distribution}
-      \label{fig:BA_between_distr}
-   \end{subfigure}
-   \hfill
-   \begin{subfigure}[b]{.45\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{../BA_fig/BA_clust_distr.png}
-      \caption{Clustering coefficient distribution}
-      \label{fig:BA_clust_distr}
-   \end{subfigure}
-\end{figure}
-
 \begin{multicols}{2}
-PARLARe DeLLe DIFFeReNZe CON NeTWORK ReALe e MODeLLO SCALe FRee
+Prendendo a riferimento Fig.\ref{fig:network_differences}, ci si accorge che, per quanto l'andamento della distribuzione dei degree
+e della betweenness centrality (Fig.\ref{fig:deg_distr}, \ref{fig:BA_deg_distr} e Fig.\ref{fig:between_distr}, \ref{fig:BA_between_distr}) siano simili,
+il modello di Barabasi non descrive appieno le caratteristiche del network.
+In particolare, il coefficiente di clustering locale (Fig.\ref{fig:clust_distr},\ref{fig:BA_clust_coeff}) (e quindi quello medio) è
+molto minore ed in generale si osservano differenze tra la struttura dei link del random network e il network reale, che devia
+sensibilmente dal \textit{preferential attachment} tipico del modello Barabasi (Fig.\ref{fig:BA_rank_plot}).
+Infatti, la linea retta del plot di degree-rank è tipica dell'invarianza di scala (\textit{scale-free network}) di un network in cui
+i nodi sono distribuiti in degree secondo una legge di potenza, il cui coefficiente in questo caso è circa $\alpha=-2$.
+Questo è consistente con le differenze osservate anche nel clustering coefficient.
+La legge che regola invece il network reale è inizialmente ben approssimata da una potenza, ma devia sensibilmente per i nodi
+più periferici, dove decade esponenzialmente (la parabola concava di Fig.\ref{fig:rank_plot}).
+La causa di ciò non è da attribuirsi alle componenti disconnesse del grafo, per cui si ha sì un brusco crollo dell'average degree,
+ma che comparirebbero (come infatti fanno) in una corta linea retta e distaccata, insieme ai nodi più periferici di grado 1, nella coda
+della curva in Fig.\ref{fig:rank_plot}; questi nodi sono inoltre troppo pochi per definire, da soli, l'andamento decrescente e continuo osservato.
+La curvatura concava è invece una caratteristica intrinseca della struttura del grafo, che suggerisce che la legge con cui si creano
+nuovi link sia più forte di un prefential attachment.
+Potrebbe trattarsi di una funzione moltiplicativa, come un algoritmo di score per gli utenti più attivi o i post più virali, con cui i nuovi 
+utenti sono più portati ad interagire, preferendo alcuni nodi e creando un feedback positivo di attaccamento.
 
+Per questi motivi e da Fig.\ref{fig:deg_distr} e Fig.\ref{fig:rank_plot} si evince che la distribuzione dei nodi non è una legge di potenza, ma una distribuzione lognormale,
+la cui coda è meno ripida e più lunga, tanto da creare una sensibile differenza del grado massimo atteso: 1931 anzichè 419.
+Una hub del genere, richiederebbe un modello random dell'ordine di $10^5$ nodi.
 \end{multicols}
-
 
 \subsection{Path Analysis}
-\begin{multicols}{2}
-Dal momento che le coppie di nodi disconnesse non sono alquanto significative, ci riduciamo alla componente
-principale connessa del grafo (LCC) per proseguire l'analisi.
-\end{multicols}
-
 \begin{figure}[htb]           %GRAPH LCC PLOT
    \centering
    \includegraphics[width= 0.8\textwidth]{../many_fig/many_LCC_plot.PNG}
    \caption{Dettaglio della largest connected component (LCC) del network, comprendente 9267 nodi (il 99.2\% dei totali) }
-   \label{fig:LCC_plot}
+   \label{fig:LCC_graph}
 \end{figure}
 
+\begin{multicols}{2}
+Dal momento che le coppie di nodi disconnesse non sono molto significative ai fini dell'analisi delle interazioni, ci riduciamo, da ora e nel proseguo, alla componente
+principale connessa del grafo (LCC), mostrata nel dettaglio in Fig.\ref{fig:LCC_graph}.
+In questo caso, il carattere di network reale si riscontra nella bassa distanza media e dalla forma della distribuzione della betweenness (Fig.\ref{fig:between_distr}),
+dove la maggior parte dei nodi hanno bassissima centralità e non esistono veri \textit{bridges} nel network, a causa dell'alto coefficiente di clustering:
+\end{multicols}
+
+\vspace{5pt}
+\begin{center}
+   \begin{tabular}{|c|c|c|}
+      \hline
+      \multicolumn{3}{|c|}{Path properties} \\
+      \hline
+      Longest shortest path & Avg. path lenght & Max betweenness of a node \\
+      10 & 3.4104 & 0.187 \\
+      \hline
+   \end{tabular}
+   \label{tab:path_analysis}
+\end{center}
 
 \hrulefill
 \section{Community Detection}
 \label{sec:community_detection}
+
+
 
 \hrulefill
 \section{Dynamic Analysis}
 \label{sec:dynamic_analysis}
 
 
+
+
 \hrulefill
 \section{Open Questions}
 \label{sec:open_questions}
+
+
 
 \end{document}
 
@@ -245,7 +299,7 @@ Degree distribution, V
 avg degree (---> small world? scale free?),        
 Connected components analysis;                              
 Path analysis (avg path lenght, diameter, )
-Clustering Coefficient (global + local, avg),     V         ----> low clustering? ---> barabasi-albert Clust_BA = (ln N^2)/N = 0.0052 for N=
+Clustering Coefficient (global + local, avg),     V         ----> low clustering? ---> barabasi-albert Clust_BA = (ln N^2)/N = 0.008
 Density analysis (sparse? dense? self-interactions?);       ---->unweighted density = 0.0024, weighted density = 0.0009??
 Centrality analysis (degree,
     connectivity: katz?,
@@ -290,8 +344,8 @@ Reasoning: E(56674) / N(9339) ≈ 6.07 -> rounded to 6
 
 Generating standard Barabási-Albert graph...
 Graph generation complete.
-
 ACTUAL PROPERTIES OF RESULTING BA GRAPH:
   - Nodes (N): 9339 (Match: YES)
   - Edges (E): 55998 (Requested: 56674, Discrepancy: -676 (1.19%)
-  - Avg. Clustering (C): 0.00807
+density: 0.0012842461335529289, avg degree: 11.9923, avg clustering coefficient: 0.0084
+max degree: 419, max betweenness centrality: 0.0678
