@@ -55,10 +55,9 @@ def create_and_draw_equivalent_ba(target_N, target_E, target_clustering=None, se
     print("\nACTUAL PROPERTIES OF RESULTING BA GRAPH:")
     print(f"  - Nodes (N): {actual_N} (Match: {'YES' if actual_N == target_N else 'NO'})")
     print(f"  - Edges (E): {actual_E} (Requested: {target_E}, Discrepancy: {actual_E - target_E} ({np.abs(100 - 100*actual_E/target_E):.2f}%)")
-    print(f"  - Avg. Clustering (C): {actual_C:.5f}")
 
     #ANALYSIS OF THE BA GRAPH
-    deg_distribution = nx.degree_histogram(G_ba)
+    #deg_distribution = nx.degree_histogram(G_ba)
     density = nx.density(G_ba)
     betweenness_centrality = nx.betweenness_centrality(G_ba)
 
@@ -75,7 +74,9 @@ def create_and_draw_equivalent_ba(target_N, target_E, target_clustering=None, se
     clust_vals = sorted(clustering.values(), reverse=True)
     avg_degree = sum(degree_sequence) / len(degree_sequence) if degree_sequence else 0
 
-    avg_clust_coeff = sum(clust_vals) / len(clust_vals) if clust_vals else 0
+    
+    print(f'density: {density}, avg degree: {avg_degree:.4f}, avg clustering coefficient: {actual_C:.4f}')
+    print(f'max degree: {max(degree_sequence)}, max betweenness centrality: {max(centrality_vals):.4f}')
 
     #PLOT THE STATISTICS
     # Visualization: degree distribution histogram (log-scaled y), degree-rank plot, centrality histogram, clustering histogram
@@ -112,6 +113,7 @@ def create_and_draw_equivalent_ba(target_N, target_E, target_clustering=None, se
 
     plt.show()
 
+    '''
     #PLOT THE GRAPH
     plt.figure(figsize=(10, 8))
     
@@ -155,7 +157,7 @@ def create_and_draw_equivalent_ba(target_N, target_E, target_clustering=None, se
     plt.axis('off')
     print("\nVisualization complete. Close the plot window to finish.")
     plt.show()
-
+'''
 
 #INITIAL SETTINGS (TO MATCH THE ACTUAL GRAPH)
 # Define properties of a 'real' graph you want to mimic
