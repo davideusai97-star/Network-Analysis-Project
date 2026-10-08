@@ -8,3 +8,4 @@ tmp
 *.toc
 *.log
 *.synctex.gz
+*.pyc
