@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
+import random
 
 # Graph parameters
 num_nodes = 9339
 num_edges = 56674
-seed = 42
+seed = random.seed()
 
 # Generate the Erdős-Rényi random graph G(n, m)
 G_er = nx.gnm_random_graph(n=num_nodes, m=num_edges, seed=seed)
@@ -28,6 +29,8 @@ avg_clustering = sum(clust_vals) / len(clust_vals) if clust_vals else 0
 print(f'density: {density}, avg degree: {avg_degree:.4f}, avg clustering coefficient: {avg_clustering:.4f}')
 print(f'max degree: {max(degree_sequence)}, max betweenness centrality: {max(centrality_vals):.4f}')
 
+
+'''
 # Degree-rank plot
 ranks = np.arange(1, len(degree_sequence) + 1)
 
@@ -61,6 +64,8 @@ plt.ylabel('Frequency')
 plt.title('Clustering Coefficient Distribution')
 plt.tight_layout()
 
+'''
+
 # Plot the graph
 plt.figure(figsize=(10, 8))
 # Fewer iterations keep the layout computation tractable on a large graph.
@@ -71,15 +76,16 @@ nx.draw_networkx_edges(G_er, pos, edge_color='gray', alpha=0.3)
 hub_threshold = np.percentile(list(degree_dict.values()), 95)
 hubs = [node for node, degree in degree_dict.items() if degree >= hub_threshold]
 
+
 nx.draw_networkx_nodes(
     G_er,
     pos,
-    nodelist=hubs,
-    node_size=80,
-    node_color='C3',
-    edgecolors='black',
+    nodelist=G_er.nodes(),
+    node_size=5,
+    node_color='red',
+    edgecolors='lightblue',
     linewidths=0.3,
-    alpha=0.8,
+    alpha=0.7,
 )
 
 plt.axis('off')
