@@ -24,14 +24,11 @@
    I dati utilizzati sono pubblici ed accessibili da huggingface/SimulaMet/moltbook-observatory-archive (previa registrazione ad HuggingFace),
    ma onerosi in memoria: selezioniamo solo alcuni dataset consultabili, riducendoci ad agenti, post e commenti, da cui estrarre il grafo utile lavorando con una mole
    gestibile di dati.
-\end{multicols}
 
-\hrulefill
+   \hrulefill
 
-\section{Data Collection}
-\label{sec:data_collection}
-
-\begin{multicols}{2}
+   \section{Data Collection}
+   \label{sec:data_collection}
    I tre dataset scelti sono dizionari della forma
    \begin{itemize}
       \item agenti: 'id', 'name', 'description', 'karma', 'follower\_count', 'following\_count', 'is\_claimed',
@@ -73,19 +70,20 @@
    Raggruppando le coppie in questo modo, perdiamo infomazione sulle interazioni temporali, ma siamo in grado di creare il network statico complessivo
    con edges non pesati (ignorando semplicemente la molteplicità dei link) e non direzionati (Fig.\ref{fig:network}).
    Le timestamps delle interazioni verranno reintrodotte per l'analisi di Sez.\ref{sec:dynamic_analysis}.
-\end{multicols}
+   
+   \hrulefill
+%\end{multicols}
 
-\begin{figure}[htb]              %GRAPH PLOT
+   \begin{figure}[htb]              %GRAPH PLOT
    \centering
    \includegraphics[width=0.8\textwidth]{../many_fig/many_plot.png}
    \caption{Network degli agenti Moltbook, non direzionato e non pesato, costruito seguendo i passi di sez. \ref{sec:data_collection}.}
    \label{fig:network}
-\end{figure}
+   \end{figure}
 
-\hrulefill
-\section{Network Analysis}
-\label{sec:graph_analysis}
-\begin{multicols}{2}
+   \section{Network Analysis}
+   \label{sec:graph_analysis}
+%\begin{multicols}{2}
    Il grafo costruito a questo punto viene analizzato con il pacchetto \textit{networkx} di Python.
    Consiste in un network con più componenti disconnesse, di cui una principale e numerose altre formate da coppie di nodi.
 
@@ -102,15 +100,39 @@
       \hline
    \end{tabular}
    \label{tab:graph_shape}
+   \vspace{5pt}
 
    Possiamo notare subito dalla tabella che la densità è bassa mentre il coefficiente di clustering medio piuttosto alto, come ci si
    aspetterebbe in un network reale.
    Più interessanti sono però le distribuzioni delle proprietà dei nodi, che ci permettono di caratterizzare
    il grafo.
-\end{multicols}
+%\end{multicols}
 
-\subsection{Modelli random equivalenti: Barabasi-Albert}
-\begin{multicols}{2}
+   \subsection{Modelli random equivalenti: Erdos-Renyi}
+%\begin{multicols}{2}
+   Da Tab.\ref{tab:graph_shape} costruiamo il grafo random Erdos-Renyi per confrontarne la topologia (Fig.\ref{fig:er_network})
+   e la distribuzione (Fig.\ref{fig:network_differences}).
+   Ci si accorge subito di come questo modello non rispecchi le caratteristiche del network reale.
+
+   \vspace{5pt}
+   \begin{tabular}{|c|c|c|}            %   er TAB
+      \hline
+      \multicolumn{3}{|c|}{Shape of the random ER graph} \\
+      \hline
+      Nodes & Edges & Density \\
+      9339 & 56674 & 0.0013 \\
+      \hline
+      Max degree & Avg. degree & Avg. clustering coeff. \\
+      28 & 12.14 & 0.0014 \\
+      \hline
+   \end{tabular}
+   \label{tab:er_graph_shape}
+   \vspace{5pt}
+
+%\end{multicols}
+
+   \subsection{Modelli random equivalenti: Barabasi-Albert}
+%\begin{multicols}{2}
    I dai plot di sinistra di Fig.\ref{fig:network_differences} (specialmente \ref{fig:deg_distr} e \ref{fig:rank_plot}) suggeriscono che esiste un sistema di poche hub,
    che in questo caso rappresentano gli agenti più attivi o influenti, con grande centralità nel social
    (\ref{fig:between_distr}); mentre la quasi totalità degli agenti contribuisce alpiù a qualche decina di interazioni.
@@ -125,81 +147,118 @@
 \begin{figure}[p]                %DISTRIBUZIONI DeL NeTOWRK ReALe e RANDOM eQUIVALeNTe
    \centering
    % Row 1
-   \begin{subfigure}[b]{0.48\textwidth}
+   \begin{subfigure}[b]{0.33\textwidth}
       \centering
       \includegraphics[width=\linewidth]{../many_fig/deg_distr.png}
-      \caption{Distribuzione dei degree del network}
+      \caption{Degree distribution, network reale}
       \label{fig:deg_distr}
    \end{subfigure}%
    \hfill
-   \begin{subfigure}[b]{0.48\textwidth}
+   \begin{subfigure}[b]{0.33\textwidth}
       \centering
       \includegraphics[width=\linewidth]{../BA_fig/BA_deg_distr.png}
-      \caption{Distribuzione dei degree del grafo Barabasi-Albert}
+      \caption{Degree distribution, Barabasi-Albert}
       \label{fig:BA_deg_distr}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{0.33\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../er_fig/er_deg_distr.png}
+      \caption{Degree distribution, Erdos-Renyi}
+      \label{fig:er_deg_distr}
    \end{subfigure}
 
    \vspace{0.8em} % Vertical spacing between rows
 
    % Row 2
-   \begin{subfigure}[b]{0.48\textwidth}
+   \begin{subfigure}[b]{0.33\textwidth}
       \centering
       \includegraphics[width=\linewidth]{../many_fig/rank_plot.png}
-      \caption{Rank plot del network}
+      \caption{Degree-Rank plot, network reale}
       \label{fig:rank_plot}
    \end{subfigure}%
    \hfill
-   \begin{subfigure}[b]{0.48\textwidth}
+   \begin{subfigure}[b]{0.33\textwidth}
       \centering
       \includegraphics[width=\linewidth]{../BA_fig/BA_rank_plot.png}
-      \caption{Rank plot del grafo Barabasi-Albert}
+      \caption{Degree-Rank plot Barabasi-Albert}
       \label{fig:BA_rank_plot}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{0.33\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../er_fig/er_rank_plot.png}
+      \caption{Degree-Rank plot, Erdos-Renyi}
+      \label{fig:er_rank_plot}
    \end{subfigure}
 
    \vspace{0.8em}
 
    % Row 3
-   \begin{subfigure}[b]{0.48\textwidth}
+   \begin{subfigure}[b]{0.33\textwidth}
       \centering
       \includegraphics[width=\linewidth]{../many_fig/between_distr.png}
-      \caption{Distribuzione della betweenness centrality dl grafo}
+      \caption{Betweenness centrality, network reale}
       \label{fig:between_distr}
    \end{subfigure}%
    \hfill
-   \begin{subfigure}[b]{0.48\textwidth}
+   \begin{subfigure}[b]{0.33\textwidth}
       \centering
       \includegraphics[width=\linewidth]{../BA_fig/BA_between_distr.png}
-      \caption{Distribuzione della betweenness centrality del grafo di Barabasi-Albert}
+      \caption{Betweenness centrality, Barabasi-Albert}
       \label{fig:BA_between_distr}
    \end{subfigure}
-
+   \hfill
+   \begin{subfigure}[b]{0.33\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../er_fig/er_between_distr.png}
+      \caption{Betweenness centrality, Erdos-Renyi}
+      \label{fig:er_between_distr}
+   \end{subfigure}
    \vspace{0.8em}
 
    % Row 4
-   \begin{subfigure}[b]{0.48\textwidth}
+   \begin{subfigure}[b]{0.33\textwidth}
       \centering
       \includegraphics[width=\linewidth]{../many_fig/clust_distr.png}
-      \caption{Distribuzione del coefficiente di clustering locale del grafo}
+      \caption{Clustering coefficient locale, network reale}
       \label{fig:clust_distr}
    \end{subfigure}%
    \hfill
-   \begin{subfigure}[b]{0.48\textwidth}
+   \begin{subfigure}[b]{0.33\textwidth}
       \centering
       \includegraphics[width=\linewidth]{../BA_fig/BA_clust_distr.png}
-      \caption{Distribuzione del coefficiente di clustering locale del grafo Barabasi-Albert}
+      \caption{Clustering coefficient locale, Barabasi-Albert}
       \label{fig:BA_clust_coeff}
    \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{0.33\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../er_fig/er_clust_distr.png}
+      \caption{Clustering coefficient locale, Erdos-Renyi}
+      \label{fig:er_clust_coeff}
+   \end{subfigure}
 
-   \caption{Differenze tra il network reale (sinistra) e il network generato dal modello random equivalente (Barabasi-Albert) (destra).}
+   \caption{Differenze tra il network reale (sinistra), il random network generato dal modello Barabasi-Albert (centro) e
+   quello con modello Erdos-Renyi (destra).\\
+   Si attenziona al fatto che le scale delle ascisse possono essere diverse nei grafici.}
    \label{fig:network_differences}
 \end{figure}
 
 \begin{figure}[htb]        %BA PLOT
-   \includegraphics[width=0.8\textwidth]{../BA_fig/BA_plot_2.png}
-   \caption{Random network degli agenti Moltbook con modello Barabasi-Albert, costruito richiedendo un numero di nodi ed edges
-   equivalenti a Tab.\ref{tab:graph_shape}.
-   \\ Le hub (i nodi con il 5\% più alto di degree) sono evidenziate in rosso.}
-   \label{fig:BA_network}
+   \begin{subfigure}{0.48\textwidth}
+      \includegraphics[width=\linewidth]{../BA_fig/BA_plot_2.png}
+      \caption{}
+      \label{fig:BA_network}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.48\textwidth}
+      \includegraphics[width=\linewidth]{../er_fig/er_plot.png}
+      \caption{}
+      \label{fig:er_network}
+   \end{subfigure}
+   \caption{Random network BA (sinistra) e ER (destra), costruiti dalla richiesta di equivalenza con Tab.\ref{tab:graph_shape}.\\
+   Le hub (i nodi con il 5\% più alto di degree) sono evidenziate in rosso.}
 \end{figure}
 
 \begin{center}             %BA TAB
