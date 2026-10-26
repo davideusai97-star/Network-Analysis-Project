@@ -2,6 +2,15 @@
 *.png
 *.json
 tmp
+.vscode
+*.aux
+*.fdb_latexmk
+*.fls
+*.toc
+*.log
+*.synctex.gz
+*.pyc
+*.synctex
 **/.vscode/
 *.graphml
 *.pdf
