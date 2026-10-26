@@ -304,27 +304,223 @@
    \hrulefill
    \section{Community Detection}
    \label{sec:community_detection}
+   
+   Per identificare la struttura in community della rete ci restringeremo alla \textbf{Largest Connected Component (LCC)} e utilizzeremo i seguenti algoritmi, implementati nella libreria \textit{CDlib}: Louvain, Infomap e Label Propagation.
+   %I tre metodi si basano su criteri differenti: Louvain ricerca una partizione attraverso l'ottimizzazione della modularità, Infomap minimizza la \textit{map equation}, mentre Label Propagation costruisce le community mediante la propagazione iterativa delle etichette tra nodi adiacenti.
 
-   louvain (massimizza modularity): dieci realizzazioni random, tabella risultati medi
-
-
-   infomap (random walker, minimizza conductance):
-
-
-   label propagation: majority rule per ogni agente
+   Confronteremo quindi le partizioni ottenute calcolando il numero e la dimensione delle community, oltre alla modularity di Newman--Girvan e la conductance. Queste ultime forniscono una misura diversa della qualità della partizione, in quanto una modularity maggiore indica una maggiore concentrazione degli edges all'interno delle community rispetto al relativo null model, mentre valori inferiori di conductance indicano una migliore separazione delle community dal resto della rete. 
 
 
-   demon: fatto ma fa schifo
+   \subsection{Confronto tra le partizioni e stabilità}
 
-   NMI: normalized mutual information fra i tre algoritmi
+   I tre algoritmi producono partizioni sensibilmente differenti: la Tab.~\ref{tab:community_comparison} confronta le loro principali proprietà, mentre in Fig.~\ref{fig:community_size_distributions} sono riportate le distribuzioni del numero di community di ognuna.
 
+   \begin{table}[htb]
+      \centering
+      \resizebox{\columnwidth}{!}{
+      \begin{tabular}{|c|c|c|c|c|c|c|}
+         \hline
+         Algorithm & Communities & Largest & \shortstack{Mean \\ size} & \shortstack{Median \\ size} & Modularity & \shortstack{Mean \\ conductance} \\
+         \hline
+         Louvain & 27 & 2317 & 343.22 & 4.0 & 0.3906 & 0.3613 \\
+         Infomap & 392 & 3221 & 23.64 & 9.0 & 0.3231 & 0.6192 \\
+         Label Prop. & 15 & 8011 & 617.80 & 3.0 & 0.1525 & 0.2107 \\
+         \hline
+      \end{tabular}
+      }
+      \caption{Confronto delle principali proprietà delle partizioni ottenute dai tre algoritmi.}
+      \label{tab:community_comparison}
+   \end{table}
+
+   \begin{figure*}[htb]
+      \centering
+
+      \begin{subfigure}[b]{0.32\textwidth}
+         \centering
+         \includegraphics[width=\linewidth]{../comm_det_fig/louvain_size.png}
+         \caption{Louvain}
+         \label{fig:louvain_size}
+      \end{subfigure}
+      \hfill
+      \begin{subfigure}[b]{0.32\textwidth}
+         \centering
+         \includegraphics[width=\linewidth]{../comm_det_fig/infomap_size.png}
+         \caption{Infomap}
+         \label{fig:infomap_size}
+      \end{subfigure}
+      \hfill
+      \begin{subfigure}[b]{0.32\textwidth}
+         \centering
+         \includegraphics[width=\linewidth]{../comm_det_fig/label_propagation_size.png}
+         \caption{Label Propagation}
+         \label{fig:labelprop_size}
+      \end{subfigure}
+
+      \caption{Distribuzione della community-size per ognuna delle partizioni ottenute dai tre algoritmi.}
+      \label{fig:community_size_distributions}
+   \end{figure*}
+
+   Ognuno dei tre algoritmi genera una struttura comunitaria sbilanciata, con poche community numerose e molte costituite da un numero esiguo di nodi.
+   Louvain individua una partizione relativamente più aggregata, caratterizzata dalla modularità più elevata tra le tre partizioni. 
+   Infomap produce invece una struttura molto più fine, con 392 community, mentre Label Propagation genera una partizione fortemente sbilanciata: 8011 dei 9267 nodi della LCC vengono infatti assegnati alla stessa community.
+
+   Le differenze tra le partizioni sono quantificate tramite la \textbf{Normalized Mutual Information (NMI)}, come mostrato in Tab.~\ref{tab:nmi_comparison}. 
+
+   \begin{table}[htb]
+      \centering
+      \begin{tabular}{|c|c|c|}
+         \hline
+         Partition 1 & Partition 2 & NMI \\
+         \hline
+         Louvain & Infomap & 0.4132 \\
+         Louvain & Label Propagation & 0.2305 \\
+         Infomap & Label Propagation & 0.1804 \\
+         \hline
+      \end{tabular}
+      \caption{NMI tra le partizioni ottenute dai tre algoritmi.}
+      \label{tab:nmi_comparison}
+   \end{table}
+
+   La maggiore similarità si osserva tra Louvain e Infomap, con una NMI pari a 0.4132, anche se i valori relativamente bassi confermano che i tre algoritmi identificano partizioni tra loro differenti.
+
+   I tre algoritmi utilizzati inoltre presentano una componente stocastica nella loro realizzazione, per cui le partizioni che producono dipendono dalla loro particolare inizializzazione. 
+
+   Per determinare la loro stabilità ripetiamo ogni algoritmo con 10 random seed, quindi valutiamo la variabilità nel numero di communities, nella modularità e nella mean conductance, oltre alla NMI fra le diverse realizzazioni dello stesso algoritmo.
+   In Tab.~\ref{tab:nmi_stability} sono riportati valor medio e deviazione standard dei risultati così ottenuti.  
+
+   \begin{table}[htb]
+      \centering
+      \resizebox{\columnwidth}{!}{
+      \begin{tabular}{|c|c|c|c|c|}
+         \hline
+         Algorithm & Num communities & Modularity & Conductance & NMI\\
+         \hline
+         Louvain & $23 \pm 4$  &  $0.396 \pm 0.005$ & $0.37 \pm 0.02$ & $0.52 \pm 0.05$ \\
+         Infomap & $383 \pm 8$ & $0.32 \pm 0.01$ & $0.612 \pm 0.005$ & $0.84 \pm 0.02$\\
+         Label Propagation & $16 \pm 2$ & $0.11 \pm 0.07$ & $0.22 \pm 0.02$ & $0.50 \pm 0.35$ \\
+         \hline
+      \end{tabular}
+      }
+      \caption{Stabilità dei tre algoritmi attraverso dieci random seed.}
+      \label{tab:nmi_stability}
+   \end{table}
+
+   Infomap si rivela il metodo più stabile, in quanto presenta la più alta NMI tra le realizzazioni, oltre a valori di conductance e modularity pressoché costanti nelle partizioni ottenute, dal momento che le deviazioni standard associate risultano molto basse. 
+   Louvain sembra produrre partizioni più varie, ma con modularity tra loro molto vicine, mentre Label Propagation presenta una marcata dipendenza dal seed: la NMI è infatti la minore fra le tre e ha una deviazione standard associata nettamente superiore alle altre.
+
+   \subsection{Validazione semantica}
+   Per valutare se le community individuate rispecchiano anche una qualche organizzazione semantica, associamo a ogni agente un'etichetta data dal \textbf{dominant submolt}, ossia il submolt del quale questo presenta il maggior numero di interazioni. 
+   Tutti i 9267 nodi della LCC risultano associati ad almeno un dominant submolt, per un totale di 32 etchette. 
+
+   Confrontiamo quindi le partizioni ottenute mediante i tre algoritmi con quella data dalle etichette semantiche, mediante NMI.
+
+   La Tab.~\ref{tab:semantic_nmi} riporta i risultati così ottenuti.
+
+
+   \begin{table}[htb]
+      \centering
+      \begin{tabular}{|c|c|}
+         \hline
+         Algorithm & NMI with dominant submolt \\
+         \hline
+         Louvain & 0.0879 \\
+         Infomap & 0.2486 \\
+         Label Propagation & 0.0394 \\
+         \hline
+      \end{tabular}
+      \caption{NMI tra le partizioni strutturali e i dominant submolts.}
+      \label{tab:semantic_nmi}
+   \end{table}
+
+   Infomap presenta la NMI più alta, mentre Louvain e soprattutto Label Propagation mostrano valori più bassi. Questi risultati però non tengono conto del fatto che Infomap produce un numero molto maggiore di community, di cui molte composte da un numero esiguo di nodi, per cui è più probabile che presenti una più alta compatibilità con le etichette semantiche.
+
+   Passiamo quindi a valutare la bontà dell'accordo tra le etichette semantiche e le partizioni strutturali, confrontando queste ultime con un \textbf{semantic null model}.
+   Per costruirlo permutiamo randomicamente le etichette dei submolt tra le interazioni, mantenendone inalterata la frequenza complessiva ma eliminandone l'associazione con specifici nodi e interazioni. 
+   Effettuiamo un totale di 100 randomizzazioni: per ogni realizzazione cerchiamo il dominant submolt di ogni nodo, quindi calcoliamo la NMI fra le etichette così ottenute e le partizioni strutturali.
+   Confrontando questi risultati con le NMI precedentemente calcolate otteniamo una misura di quanto l'accordo sia migliore rispetto a quello che ci si aspetterebbe per una partizione semantica randomica.
+   In Tab.~\ref{tab:null_model} sono elencati i valori di NMI con le etichette semantiche e con quelle randomizzate, di cui riportiamo valor medio, deviazione standard e valori massimi e minimi nelle 100 randomizzazioni.
+
+   \begin{table}[htb]
+      \centering
+      \resizebox{\columnwidth}{!}{
+      \begin{tabular}{|c|c|c|c|c|}
+         \hline
+         Algorithm & Real NMI & Random NMI & Min Rand NMI & Max Rand NMI \\
+         \hline
+         Louvain & 0.0879 & $0.016 \pm 0.001$ & 0.014 & 0.019 \\
+         Infomap & 0.2486 & $0.105 \pm 0.002$ & 0.100 & 0.109\\
+         Label Propagation & 0.0394 & $0.0093 \pm 0.0009$ & 0.0067 & 0.0116 \\
+         \hline
+      \end{tabular}
+      }
+      \caption{Confronto tra la NMI osservata e la media ottenuta dal semantic null model.}
+      \label{tab:null_model}
+   \end{table}
+
+   Si osserva che per ciascuno dei tre algoritmi la real NMI risulta nettamente superiore a quella ottenuta dalle randomizzazioni e che nessuno dei valori massimi della random NMI la raggiunge. Questo ci porta a concludere che i valori di NMI ottenuti, nonostante siano relativamente bassi (soprattutto per Louvain e Label Propagation) descrivono un accordo con le etichette semantiche migliore di quello che ci si aspetterebbe con una partizione semantica randomica.
+
+   In questa analisi non abbiamo considerato il fatto che, qualora un nodo presentasse più di un dominant submolt, questo viene scelto randomicamente fra quelli possibili. Per controllare quanto i risultati ottenuti dipendono da questa scelta arbitraria, ricalcoliamo la NMI fra le partizioni strutturali e le etichette semantiche soltanto per i nodi della LCC che presentano un unico dominanti submolt. 
+   Si trova che 971 nodi, pari al 10.48\% della LCC, presentano almeno un pareggio: ripetendo il confronto sui soli 8296 nodi con dominant submolt univoco, i valori di NMI restano sostanzialmente invariati, come si osserva in Tab.~\ref{tab:unique_submolt}. 
+
+   \begin{table}[htb]
+      \centering
+      \resizebox{\columnwidth}{!}{
+      \begin{tabular}{|c|c|c|}
+         \hline
+         Algorithm & NMI & NMI - dominant submolt univoco \\
+         \hline
+         Louvain & 0.0879 & 0.0922 \\
+         Infomap & 0.2486 & 0.2613\\
+         Label Propagation & 0.0394 & 0.0410 \\
+         \hline
+      \end{tabular}
+      }
+      \caption{Confronto tra la NMI reale e quella ottenuta considerando solo i nodi con dominant submolt univoco.}
+      \label{tab:unique_submolt}
+   \end{table}
+
+   \subsection{Analisi della resolution di Louvain}
+
+   Per concludere, si nota che Louvain alla risoluzione standard produce una struttura comunitaria molto più aggregata rispetto a quella di Infomap. Per valutare se partizioni più fini rivelano un'organizzazione più articolata, ripetiamo Louvain per sei valori di resolution (pari a $1$, $2$, $4$, $8$, $12$ e $15$). 
+   Per ognuno usiamo cinque random seed e valutiamo numero di community, modularità standard, conductance, accordo semantico con i dominant submolts e stabilità tra le realizzazioni.
+
+   \begin{table}[htb]
+      \centering
+      \resizebox{\columnwidth}{!}{
+      \begin{tabular}{|c|c|c|c|c|c|}
+         \hline
+         Resolution & Communities & Modularity & Conductance & Semantic NMI & Stability NMI \\
+         \hline
+         1  & 23.8  & 0.3940 & 0.3644 & 0.0915 & 0.4926 \\
+         2  & 42.4  & 0.3448 & 0.6722 & 0.1367 & 0.5547 \\
+         4  & 132.0 & 0.2665 & 0.7734 & 0.1787 & 0.6648 \\
+         8  & 279.6 & 0.2045 & 0.8027 & 0.2192 & 0.7748 \\
+         12 & 403.4 & 0.1882 & 0.8120 & 0.2428 & 0.8295 \\
+         15 & 481.8 & 0.1812 & 0.8163 & 0.2552 & 0.8565 \\
+         \hline
+      \end{tabular}
+      }
+      \caption{Risultati medi dell'analisi di sensitivity alla resolution di Louvain.}
+      \label{tab:louvain_resolution}
+   \end{table}
+
+   Dai valori così ottenuti non emerge una resolution ottimale, in quanto all'aumentare di questa le partizioni si fanno più fini, semanticamente più coerenti e più stabili, ma meno favorevoli in termini di modularity e conductance.
+
+   È particolarmente significativo il caso di risoluzione pari a 12, per il quale Louvain individua in media $403.4$ community con una semantic NMI pari a $0.2428$. 
+   Questi valori sono molto vicini a quelli ottenuti da Infomap, che individua $392$ community con una semantic NMI pari a $0.2486$. 
+   Ciò suggerisce che parte della differenza osservata tra Louvain e Infomap sia riconducibile alla diversa scala alla quale i due algoritmi descrivono la struttura del network.
+
+   \subsection{Conclusioni}
+   Nel complesso, l'analisi mostra una struttura comunitaria non riconducibile a un'unica partizione. 
+   Louvain alla resolution standard produce una partizione più aggregata e con più alta modularity, mentre Infomap mostra una suddivisione più fine, maggiormente stabile e più coerente con l'organizzazione semantica dei submolt. 
+   Label Propagation produce invece una partizione fortemente sbilanciata e dipendente dal seed, oltre che meno in accordo con la distribuzione semantica dei submolt.
+
+   In ognuno dei tre casi inoltre il confronto con il semantic null model rivela un'associazione con i submolt superiore a quella ottenuta randomizzando le etichette. 
+   Nel loro insieme, questi risultati sono compatibili con una struttura comunitaria \textit{multiscale}, nella quale differenti algoritmi e differenti valori di resolution evidenziano livelli diversi di organizzazione della rete.
 
    \hrulefill
    \section{Dynamic Analysis}
    \label{sec:dynamic_analysis}
-
-
-
 
    \hrulefill
    \section{Open Questions}

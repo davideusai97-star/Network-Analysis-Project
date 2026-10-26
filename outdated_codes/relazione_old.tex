@@ -72,7 +72,7 @@
    Le timestamps delle interazioni verranno reintrodotte per l'analisi di Sez.\ref{sec:dynamic_analysis}.
    
    \hrulefill
-%\end{multicols}
+\end{multicols}
 
    \begin{figure}[htb]              %GRAPH PLOT
    \centering
@@ -81,9 +81,9 @@
    \label{fig:network}
    \end{figure}
 
-   \section{Network Analysis}
-   \label{sec:graph_analysis}
-%\begin{multicols}{2}
+\section{Network Analysis}
+\label{sec:graph_analysis}
+\begin{multicols}{2}
    Il grafo costruito a questo punto viene analizzato con il pacchetto \textit{networkx} di Python.
    Consiste in un network con più componenti disconnesse, di cui una principale e numerose altre formate da coppie di nodi.
 
@@ -106,10 +106,10 @@
    aspetterebbe in un network reale.
    Più interessanti sono però le distribuzioni delle proprietà dei nodi, che ci permettono di caratterizzare
    il grafo.
-%\end{multicols}
+\end{multicols}
 
-   \subsection{Modelli random equivalenti: Erdos-Renyi}
-%\begin{multicols}{2}
+\subsection{Modelli random equivalenti: Erdos-Renyi}
+\begin{multicols}{2}
    Da Tab.\ref{tab:graph_shape} costruiamo il grafo random Erdos-Renyi per confrontarne la topologia (Fig.\ref{fig:er_network})
    e la distribuzione (Fig.\ref{fig:network_differences}).
    Ci si accorge subito di come questo modello non rispecchi le caratteristiche del network reale.
@@ -129,10 +129,10 @@
    \label{tab:er_graph_shape}
    \vspace{5pt}
 
-%\end{multicols}
+\end{multicols}
 
-   \subsection{Modelli random equivalenti: Barabasi-Albert}
-%\begin{multicols}{2}
+\subsection{Modelli random equivalenti: Barabasi-Albert}
+\begin{multicols}{2}
    I dai plot di sinistra di Fig.\ref{fig:network_differences} (specialmente \ref{fig:deg_distr} e \ref{fig:rank_plot}) suggeriscono che esiste un sistema di poche hub,
    che in questo caso rappresentano gli agenti più attivi o influenti, con grande centralità nel social
    (\ref{fig:between_distr}); mentre la quasi totalità degli agenti contribuisce alpiù a qualche decina di interazioni.
